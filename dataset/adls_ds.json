@@ -14,9 +14,6 @@
 			},
 			"city": {
 				"type": "string"
-			},
-			"fileName": {
-				"type": "string"
 			}
 		},
 		"annotations": [],
@@ -25,7 +22,7 @@
 			"location": {
 				"type": "AzureBlobFSLocation",
 				"fileName": {
-					"value": "@concat(dataset().city, '/', dataset().fileName)",
+					"value": "@dataset().city",
 					"type": "Expression"
 				},
 				"folderPath": {
