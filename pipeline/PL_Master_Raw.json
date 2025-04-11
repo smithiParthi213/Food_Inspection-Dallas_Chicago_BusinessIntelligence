@@ -1,0 +1,70 @@
+{
+	"name": "PL_Master_Raw",
+	"properties": {
+		"activities": [
+			{
+				"name": "Copy_RAW_Chicago",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"additionalColumns": [
+							{
+								"name": "DI_JOB_ID",
+								"value": {
+									"value": "@pipeline().parameters.job_id",
+									"type": "Expression"
+								}
+							},
+							{
+								"name": "DI_LOAD_DATE",
+								"value": {
+									"value": "@utcNow()",
+									"type": "Expression"
+								}
+							}
+						],
+						"storeSettings": {
+							"type": "AzureBlobFSReadSettings",
+							"recursive": true,
+							"wildcardFolderPath": "raw/chicago",
+							"wildcardFileName": "*.tsv",
+							"enablePartitionDiscovery": false
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "adls_ds",
+						"type": "DatasetReference",
+						"parameters": {
+							"container": "bronze",
+							"layer": "raw",
+							"city": "chicago"
+						}
+					}
+				]
+			}
+		],
+		"parameters": {
+			"job_id": {
+				"type": "string",
+				"defaultValue": "\"SP_001\""
+			}
+		},
+		"annotations": []
+	}
+}

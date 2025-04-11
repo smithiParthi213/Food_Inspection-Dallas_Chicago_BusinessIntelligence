@@ -6,16 +6,16 @@
 			"type": "LinkedServiceReference"
 		},
 		"parameters": {
-			"fileName": {
+			"container": {
 				"type": "string"
 			},
 			"layer": {
 				"type": "string"
 			},
-			"container": {
+			"city": {
 				"type": "string"
 			},
-			"city": {
+			"fileName": {
 				"type": "string"
 			}
 		},
