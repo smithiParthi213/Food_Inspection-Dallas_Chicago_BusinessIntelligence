@@ -37,14 +37,26 @@
 							"type": "AzureBlobFSReadSettings",
 							"recursive": true,
 							"wildcardFolderPath": "raw/chicago",
-							"wildcardFileName": "*.tsv",
+							"wildcardFileName": "*",
 							"enablePartitionDiscovery": false
 						},
 						"formatSettings": {
 							"type": "DelimitedTextReadSettings"
 						}
 					},
-					"enableStaging": false
+					"sink": {
+						"type": "SnowflakeV2Sink",
+						"importSettings": {
+							"type": "SnowflakeImportCopyCommand"
+						}
+					},
+					"enableStaging": true,
+					"stagingSettings": {
+						"linkedServiceName": {
+							"referenceName": "AzureBlobStorage_LS",
+							"type": "LinkedServiceReference"
+						}
+					}
 				},
 				"inputs": [
 					{
@@ -56,13 +68,46 @@
 							"city": "chicago"
 						}
 					}
+				],
+				"outputs": [
+					{
+						"referenceName": "Snowflake",
+						"type": "DatasetReference",
+						"parameters": {
+							"schema": {
+								"value": "@pipeline().parameters.snf_schema",
+								"type": "Expression"
+							},
+							"tableName": {
+								"value": "CHICAGO_FOOD_INSPECTIONS_RAW",
+								"type": "Expression"
+							}
+						}
+					}
 				]
+			},
+			{
+				"name": "Initial_CleanUp",
+				"type": "DatabricksNotebook",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": []
 			}
 		],
 		"parameters": {
 			"job_id": {
 				"type": "string",
 				"defaultValue": "\"SP_001\""
+			},
+			"snf_schema": {
+				"type": "string",
+				"defaultValue": "\"BRONZE\""
 			}
 		},
 		"annotations": []
