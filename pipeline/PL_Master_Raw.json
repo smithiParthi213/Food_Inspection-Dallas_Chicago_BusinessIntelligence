@@ -3,7 +3,7 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "Copy_RAW_Dallas",
+				"name": "Copy_RAW_Dallas2",
 				"type": "Copy",
 				"dependsOn": [
 					{
@@ -118,6 +118,46 @@
 							"sinkSNF": {
 								"schema": "BRONZE",
 								"tableName": "CHICAGO_FOOD_INSPECTIONS_RAW"
+							}
+						}
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			},
+			{
+				"name": "Copy_RAW_Dallas",
+				"type": "ExecuteDataFlow",
+				"state": "Inactive",
+				"onInactiveMarkAs": "Succeeded",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "RawInspectionsDallas",
+						"type": "DataFlowReference",
+						"parameters": {
+							"JOB_ID": "\"Dale_06\""
+						},
+						"datasetParameters": {
+							"sourceDelimetedText": {
+								"container": "bronze",
+								"layer": "raw",
+								"city": "dallas"
+							},
+							"sinkSNF": {
+								"schema": "BRONZE",
+								"tableName": "DALLAS_FOOD_INSPECTIONS_RAW"
 							}
 						}
 					},
