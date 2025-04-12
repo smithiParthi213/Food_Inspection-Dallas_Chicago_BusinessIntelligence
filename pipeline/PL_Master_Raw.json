@@ -83,10 +83,7 @@
 						"type": "DatasetReference",
 						"parameters": {
 							"schema": "BRONZE",
-							"tableName": {
-								"value": "DALLAS_FOOD_INSPECTIONS_RAW",
-								"type": "Expression"
-							}
+							"tableName": "DALLAS_FOOD_INSPECTIONS_RAW"
 						}
 					}
 				]
