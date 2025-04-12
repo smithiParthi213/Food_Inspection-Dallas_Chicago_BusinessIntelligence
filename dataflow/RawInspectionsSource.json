@@ -46,7 +46,7 @@
 				"          Results as string,",
 				"          Violations as string,",
 				"          Latitude as string,",
-				"          Longitude as double,",
+				"          Longitude as string,",
 				"          {{Location} as string",
 				"     ),",
 				"     allowSchemaDrift: true,",
@@ -65,7 +65,28 @@
 				"     format: 'table',",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
-				"     stageInsert: true) ~> sinkSNF"
+				"     stageInsert: true,",
+				"     mapColumn(",
+				"          INSPECTION_ID = {Inspection ID},",
+				"          DBA_NAME = {DBA Name},",
+				"          AKA_NAME = {AKA Name},",
+				"          LICENSE_NUMBER = {License #},",
+				"          FACILITY_TYPE = {Facility Type},",
+				"          RISK = Risk,",
+				"          ADDRESS = Address,",
+				"          CITY = City,",
+				"          STATE = State,",
+				"          ZIP = Zip,",
+				"          INSPECTION_DATE = {Inspection Date},",
+				"          INSPECTION_TYPE = {Inspection Type},",
+				"          RESULTS = Results,",
+				"          VIOLATIONS = Violations,",
+				"          LATITUDE = Latitude,",
+				"          LONGITUDE = Longitude,",
+				"          LOCATION = {{Location},",
+				"          DI_JOB_ID,",
+				"          DI_LOAD_DT",
+				"     )) ~> sinkSNF"
 			]
 		}
 	}
