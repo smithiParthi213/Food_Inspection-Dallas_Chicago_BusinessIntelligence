@@ -27,6 +27,9 @@
 				}
 			],
 			"scriptLines": [
+				"parameters{",
+				"     JOB_ID as string (\"Dale_06\")",
+				"}",
 				"source(output(",
 				"          {Inspection ID} as string,",
 				"          {DBA Name} as string,",
@@ -51,7 +54,8 @@
 				"     ignoreNoFilesFound: false) ~> sourceDelimetedText",
 				"sourceDelimetedText derive(Results = replace(replace(Results, '\\t', ' '), '\\n', ''),",
 				"          Violations = replace(replace(Violations, '\\t', ' '), '\\n', ''),",
-				"          DI_JOB_ID = ERROR_FUNCTION('')) ~> CleanColumns",
+				"          DI_JOB_ID = $JOB_ID,",
+				"          DI_LOAD_DT = currentDate()) ~> CleanColumns",
 				"CleanColumns sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     deletable:false,",
