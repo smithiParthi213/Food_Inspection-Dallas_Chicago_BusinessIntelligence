@@ -1,0 +1,94 @@
+{
+	"name": "RawInspectionsChicago",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "adls_ds",
+						"type": "DatasetReference"
+					},
+					"name": "sourceDelimetedText"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "Snowflake",
+						"type": "DatasetReference"
+					},
+					"name": "sinkSNF"
+				}
+			],
+			"transformations": [
+				{
+					"name": "CleanColumns"
+				}
+			],
+			"scriptLines": [
+				"parameters{",
+				"     JOB_ID as string (\"Dale_06\")",
+				"}",
+				"source(output(",
+				"          {Inspection ID} as string,",
+				"          {DBA Name} as string,",
+				"          {AKA Name} as string,",
+				"          {License #} as string,",
+				"          {Facility Type} as string,",
+				"          Risk as string,",
+				"          Address as string,",
+				"          City as string,",
+				"          State as string,",
+				"          Zip as double,",
+				"          {Inspection Date} as string,",
+				"          {Inspection Type} as string,",
+				"          Results as string,",
+				"          Violations as string,",
+				"          Latitude as string,",
+				"          Longitude as string,",
+				"          {{Location} as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> sourceDelimetedText",
+				"sourceDelimetedText derive(Results = replace(replace(Results, '\\t', ' '), '\\n', ''),",
+				"          Violations = replace(replace(Violations, '\\t', ' '), '\\n', ''),",
+				"          {{Location} = concat('(', Latitude,',',Longitude,')'),",
+				"          DI_JOB_ID = $JOB_ID,",
+				"          DI_LOAD_DT = currentDate()) ~> CleanColumns",
+				"CleanColumns sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     stageInsert: true,",
+				"     mapColumn(",
+				"          INSPECTION_ID = {Inspection ID},",
+				"          DBA_NAME = {DBA Name},",
+				"          AKA_NAME = {AKA Name},",
+				"          LICENSE_NUMBER = {License #},",
+				"          FACILITY_TYPE = {Facility Type},",
+				"          RISK = Risk,",
+				"          ADDRESS = Address,",
+				"          CITY = City,",
+				"          STATE = State,",
+				"          ZIP = Zip,",
+				"          INSPECTION_DATE = {Inspection Date},",
+				"          INSPECTION_TYPE = {Inspection Type},",
+				"          RESULTS = Results,",
+				"          VIOLATIONS = Violations,",
+				"          LATITUDE = Latitude,",
+				"          LONGITUDE = Longitude,",
+				"          LOCATION = {{Location},",
+				"          DI_JOB_ID,",
+				"          DI_LOAD_DT",
+				"     )) ~> sinkSNF"
+			]
+		}
+	}
+}
