@@ -7,7 +7,14 @@
 				"type": "Copy",
 				"state": "Inactive",
 				"onInactiveMarkAs": "Succeeded",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "Initial_CleanUp",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "0.12:00:00",
 					"retry": 0,
@@ -38,7 +45,7 @@
 						"storeSettings": {
 							"type": "AzureBlobFSReadSettings",
 							"recursive": true,
-							"wildcardFolderPath": "raw/chicago",
+							"wildcardFolderPath": "raw/dallas",
 							"wildcardFileName": "*",
 							"enablePartitionDiscovery": false
 						},
@@ -68,7 +75,7 @@
 						"parameters": {
 							"container": "bronze",
 							"layer": "raw",
-							"city": "chicago"
+							"city": "dallas"
 						}
 					}
 				],
@@ -77,12 +84,9 @@
 						"referenceName": "Snowflake",
 						"type": "DatasetReference",
 						"parameters": {
-							"schema": {
-								"value": "@pipeline().parameters.snf_schema",
-								"type": "Expression"
-							},
+							"schema": "BRONZE",
 							"tableName": {
-								"value": "CHICAGO_FOOD_INSPECTIONS_RAW",
+								"value": "DALLAS_FOOD_INSPECTIONS_RAW",
 								"type": "Expression"
 							}
 						}
@@ -103,8 +107,11 @@
 				"userProperties": [],
 				"typeProperties": {
 					"dataflow": {
-						"referenceName": "RawInspectionsSource",
+						"referenceName": "RawInspectionsChicago",
 						"type": "DataFlowReference",
+						"parameters": {
+							"JOB_ID": "\"Dale_06\""
+						},
 						"datasetParameters": {
 							"sourceDelimetedText": {
 								"container": "bronze",
