@@ -5,8 +5,6 @@
 			{
 				"name": "Copy_RAW_Chicago",
 				"type": "Copy",
-				"state": "Inactive",
-				"onInactiveMarkAs": "Succeeded",
 				"dependsOn": [
 					{
 						"activity": "Initial_CleanUp",
@@ -96,6 +94,8 @@
 			{
 				"name": "Initial_CleanUp",
 				"type": "ExecuteDataFlow",
+				"state": "Inactive",
+				"onInactiveMarkAs": "Succeeded",
 				"dependsOn": [],
 				"policy": {
 					"timeout": "0.12:00:00",
