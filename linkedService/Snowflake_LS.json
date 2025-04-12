@@ -1,0 +1,23 @@
+{
+	"name": "Snowflake_LS",
+	"properties": {
+		"annotations": [],
+		"type": "SnowflakeV2",
+		"typeProperties": {
+			"authenticationType": "Basic",
+			"accountIdentifier": "aqdgcde-jla48380",
+			"user": "ADF_USER",
+			"database": "FOOD_INSPECTION_DB",
+			"warehouse": "DADABI_WH",
+			"role": "DEV_ROLE",
+			"password": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "AzureKeyVault_LS",
+					"type": "LinkedServiceReference"
+				},
+				"secretName": "snf-ad-user-pwd"
+			}
+		}
+	}
+}

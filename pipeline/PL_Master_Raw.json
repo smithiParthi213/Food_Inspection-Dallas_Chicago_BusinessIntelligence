@@ -1,0 +1,115 @@
+{
+	"name": "PL_Master_Raw",
+	"properties": {
+		"activities": [
+			{
+				"name": "Copy_RAW_Chicago",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"additionalColumns": [
+							{
+								"name": "DI_JOB_ID",
+								"value": {
+									"value": "@pipeline().parameters.job_id",
+									"type": "Expression"
+								}
+							},
+							{
+								"name": "DI_LOAD_DATE",
+								"value": {
+									"value": "@utcNow()",
+									"type": "Expression"
+								}
+							}
+						],
+						"storeSettings": {
+							"type": "AzureBlobFSReadSettings",
+							"recursive": true,
+							"wildcardFolderPath": "raw/chicago",
+							"wildcardFileName": "*",
+							"enablePartitionDiscovery": false
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"sink": {
+						"type": "SnowflakeV2Sink",
+						"importSettings": {
+							"type": "SnowflakeImportCopyCommand"
+						}
+					},
+					"enableStaging": true,
+					"stagingSettings": {
+						"linkedServiceName": {
+							"referenceName": "AzureBlobStorage_LS",
+							"type": "LinkedServiceReference"
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "adls_ds",
+						"type": "DatasetReference",
+						"parameters": {
+							"container": "bronze",
+							"layer": "raw",
+							"city": "chicago"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "Snowflake",
+						"type": "DatasetReference",
+						"parameters": {
+							"schema": {
+								"value": "@pipeline().parameters.snf_schema",
+								"type": "Expression"
+							},
+							"tableName": {
+								"value": "CHICAGO_FOOD_INSPECTIONS_RAW",
+								"type": "Expression"
+							}
+						}
+					}
+				]
+			},
+			{
+				"name": "Initial_CleanUp",
+				"type": "DatabricksNotebook",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": []
+			}
+		],
+		"parameters": {
+			"job_id": {
+				"type": "string",
+				"defaultValue": "\"SP_001\""
+			},
+			"snf_schema": {
+				"type": "string",
+				"defaultValue": "\"BRONZE\""
+			}
+		},
+		"annotations": []
+	}
+}
