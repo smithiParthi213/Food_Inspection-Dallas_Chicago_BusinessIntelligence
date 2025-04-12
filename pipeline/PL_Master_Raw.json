@@ -3,7 +3,7 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "Copy_RAW_Chicago",
+				"name": "Copy_RAW_Dallas",
 				"type": "Copy",
 				"dependsOn": [
 					{
