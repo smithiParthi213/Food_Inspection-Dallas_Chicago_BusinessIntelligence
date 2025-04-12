@@ -5,6 +5,8 @@
 			{
 				"name": "Copy_RAW_Chicago",
 				"type": "Copy",
+				"state": "Inactive",
+				"onInactiveMarkAs": "Succeeded",
 				"dependsOn": [],
 				"policy": {
 					"timeout": "0.12:00:00",
@@ -89,9 +91,7 @@
 			},
 			{
 				"name": "Initial_CleanUp",
-				"type": "DatabricksNotebook",
-				"state": "Inactive",
-				"onInactiveMarkAs": "Succeeded",
+				"type": "ExecuteDataFlow",
 				"dependsOn": [],
 				"policy": {
 					"timeout": "0.12:00:00",
@@ -100,17 +100,35 @@
 					"secureOutput": false,
 					"secureInput": false
 				},
-				"userProperties": []
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "RawInspectionsSource",
+						"type": "DataFlowReference",
+						"datasetParameters": {
+							"sourceDelimetedText": {
+								"container": "bronze",
+								"layer": "raw",
+								"city": "chicago"
+							},
+							"sinkSNF": {
+								"schema": "BRONZE",
+								"tableName": "CHICAGO_FOOD_INSPECTIONS_RAW"
+							}
+						}
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
 			}
 		],
 		"parameters": {
-			"job_id": {
+			"JOB_ID": {
 				"type": "string",
-				"defaultValue": "\"SP_001\""
-			},
-			"snf_schema": {
-				"type": "string",
-				"defaultValue": "\"BRONZE\""
+				"defaultValue": "\"Dale_06\""
 			}
 		},
 		"annotations": []
