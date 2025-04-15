@@ -3,9 +3,16 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "Copy_RAW_Chicago",
+				"name": "Copy_RAW_Dallas2",
 				"type": "Copy",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "Initial_CleanUp",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "0.12:00:00",
 					"retry": 0,
@@ -36,12 +43,13 @@
 						"storeSettings": {
 							"type": "AzureBlobFSReadSettings",
 							"recursive": true,
-							"wildcardFolderPath": "raw/chicago",
+							"wildcardFolderPath": "raw/dallas",
 							"wildcardFileName": "*",
 							"enablePartitionDiscovery": false
 						},
 						"formatSettings": {
-							"type": "DelimitedTextReadSettings"
+							"type": "DelimitedTextReadSettings",
+							"skipLineCount": 0
 						}
 					},
 					"sink": {
@@ -65,7 +73,7 @@
 						"parameters": {
 							"container": "bronze",
 							"layer": "raw",
-							"city": "chicago"
+							"city": "dallas"
 						}
 					}
 				],
@@ -74,21 +82,15 @@
 						"referenceName": "Snowflake",
 						"type": "DatasetReference",
 						"parameters": {
-							"schema": {
-								"value": "@pipeline().parameters.snf_schema",
-								"type": "Expression"
-							},
-							"tableName": {
-								"value": "CHICAGO_FOOD_INSPECTIONS_RAW",
-								"type": "Expression"
-							}
+							"schema": "BRONZE",
+							"tableName": "DALLAS_FOOD_INSPECTIONS_RAW"
 						}
 					}
 				]
 			},
 			{
 				"name": "Initial_CleanUp",
-				"type": "DatabricksNotebook",
+				"type": "ExecuteDataFlow",
 				"dependsOn": [],
 				"policy": {
 					"timeout": "0.12:00:00",
@@ -97,17 +99,38 @@
 					"secureOutput": false,
 					"secureInput": false
 				},
-				"userProperties": []
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "RawInspectionsChicago",
+						"type": "DataFlowReference",
+						"parameters": {
+							"JOB_ID": "\"Dale_06\""
+						},
+						"datasetParameters": {
+							"sourceDelimetedText": {
+								"container": "bronze",
+								"layer": "raw",
+								"city": "chicago"
+							},
+							"sinkSNF": {
+								"schema": "BRONZE",
+								"tableName": "CHICAGO_FOOD_INSPECTIONS_RAW"
+							}
+						}
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
 			}
 		],
 		"parameters": {
-			"job_id": {
+			"JOB_ID": {
 				"type": "string",
-				"defaultValue": "\"SP_001\""
-			},
-			"snf_schema": {
-				"type": "string",
-				"defaultValue": "\"BRONZE\""
+				"defaultValue": "\"Dale_06\""
 			}
 		},
 		"annotations": []
