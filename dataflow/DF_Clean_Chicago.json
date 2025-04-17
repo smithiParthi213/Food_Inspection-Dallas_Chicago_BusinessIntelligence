@@ -1,0 +1,137 @@
+{
+	"name": "DF_Clean_Chicago",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "Snowflake",
+						"type": "DatasetReference"
+					},
+					"name": "SourceSILVER"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "Snowflake",
+						"type": "DatasetReference"
+					},
+					"name": "sinkSF"
+				}
+			],
+			"transformations": [
+				{
+					"name": "splitViolation"
+				},
+				{
+					"name": "splitColumns"
+				},
+				{
+					"name": "TrimViolation"
+				},
+				{
+					"name": "splitToColumns"
+				},
+				{
+					"name": "CleanVIOLATION"
+				}
+			],
+			"scriptLines": [
+				"parameters{",
+				"     DI_JOB_ID as string (\"Dale_06\")",
+				"}",
+				"source(output(",
+				"          INSPECTION_ID as decimal(38,0),",
+				"          DBA_NAME as string,",
+				"          AKA_NAME as string,",
+				"          LICENSE_NUMBER as double,",
+				"          FACILITY_TYPE as string,",
+				"          RISK as string,",
+				"          ADDRESS as string,",
+				"          CITY as string,",
+				"          STATE as string,",
+				"          ZIP as decimal(38,0),",
+				"          INSPECTION_DATE as timestamp,",
+				"          INSPECTION_TYPE as string,",
+				"          RESULTS as string,",
+				"          VIOLATIONS as string,",
+				"          LATITUDE as double,",
+				"          LONGITUDE as double,",
+				"          LOCATION as string,",
+				"          DI_JOB_ID as string,",
+				"          DI_LOAD_DT as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> SourceSILVER",
+				"splitColumns foldDown(unroll(SplitRows),",
+				"     mapColumn(",
+				"          INSPECTION_ID,",
+				"          DBA_NAME,",
+				"          AKA_NAME,",
+				"          LICENSE_NUMBER,",
+				"          FACILITY_TYPE,",
+				"          RISK,",
+				"          ADDRESS,",
+				"          CITY,",
+				"          STATE,",
+				"          INSPECTION_DATE,",
+				"          INSPECTION_TYPE,",
+				"          RESULTS,",
+				"          VIOLATIONS = SplitRows,",
+				"          LATITUDE,",
+				"          LONGITUDE,",
+				"          LOCATION,",
+				"          ZIP",
+				"     ),",
+				"     skipDuplicateMapInputs: false,",
+				"     skipDuplicateMapOutputs: false) ~> splitViolation",
+				"CleanVIOLATION derive(SplitRows = split(VIOLATIONS, '|')\r",
+				") ~> splitColumns",
+				"splitViolation derive(CleanedViolation = trim(VIOLATIONS)) ~> TrimViolation",
+				"TrimViolation derive(ViolationNumber = iif(     regexMatch(CleanedViolation, '^\\\\s*\\\\d+\\\\.'),     regexExtract(CleanedViolation, '^\\\\s*(\\\\d+)\\\\.', 1),     'N/A' ),",
+				"          ViolationDescription = iif(  regexMatch(CleanedViolation, '^\\\\s*\\\\d+\\\\.\\\\s*(.+)\\\\s+-\\\\s+Comments:'),  trim(regexExtract(CleanedViolation, '^\\\\s*\\\\d+\\\\.\\\\s*(.+)\\\\s+-\\\\s+Comments:', 1)),  'N/A'),",
+				"          ViolationComments = iif(   regexMatch(CleanedViolation, '-\\\\s+Comments:\\\\s*(.+)$'),   trim(regexExtract(CleanedViolation, '-\\\\s+Comments:\\\\s*(.+)$', 1)),   'N/A' ),",
+				"          DI_JOB_ID = $DI_JOB_ID,",
+				"          DI_LOAD_DT = currentDate()) ~> splitToColumns",
+				"SourceSILVER derive(VIOLATIONS = iif(VIOLATIONS == 'Unknown', 'N/A', VIOLATIONS)) ~> CleanVIOLATION",
+				"splitToColumns sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     truncate:true,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     stageInsert: true,",
+				"     mapColumn(",
+				"          INSPECTION_ID,",
+				"          DBA_NAME,",
+				"          AKA_NAME,",
+				"          LICENSE_NUMBER,",
+				"          FACILITY_TYPE,",
+				"          RISK,",
+				"          ADDRESS,",
+				"          CITY,",
+				"          STATE,",
+				"          INSPECTION_DATE,",
+				"          INSPECTION_TYPE,",
+				"          RESULTS,",
+				"          LATITUDE,",
+				"          LONGITUDE,",
+				"          LOCATION,",
+				"          VIOLATION_NUMBER = ViolationNumber,",
+				"          VIOLATION_DESCRIPTION = ViolationDescription,",
+				"          VIOLATION_COMMENTS = ViolationComments,",
+				"          DI_JOB_ID,",
+				"          DI_LOAD_DT,",
+				"          ZIP",
+				"     )) ~> sinkSF"
+			]
+		}
+	}
+}
