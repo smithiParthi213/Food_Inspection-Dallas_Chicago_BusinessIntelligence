@@ -1,5 +1,5 @@
 {
-	"name": "pipeline1",
+	"name": "Clean_Raw_Data_1_PL",
 	"properties": {
 		"activities": [
 			{
