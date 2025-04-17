@@ -1,5 +1,5 @@
 {
-	"name": "DF_",
+	"name": "DF_Clean_Chicago",
 	"properties": {
 		"type": "MappingDataFlow",
 		"typeProperties": {
@@ -21,7 +21,10 @@
 					"name": "splitColumns"
 				},
 				{
-					"name": "derivedColumn1"
+					"name": "TrimViolation"
+				},
+				{
+					"name": "splitToColumns"
 				}
 			],
 			"scriptLines": [
@@ -49,7 +52,7 @@
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     format: 'table') ~> SourceSILVER",
-				"splitColumns foldDown(unroll(violation_array ),",
+				"splitColumns foldDown(unroll(SplitRows),",
 				"     mapColumn(",
 				"          INSPECTION_ID,",
 				"          DBA_NAME,",
@@ -63,15 +66,29 @@
 				"          INSPECTION_DATE,",
 				"          INSPECTION_TYPE,",
 				"          RESULTS,",
-				"          VIOLATIONS,",
+				"          VIOLATIONS = SplitRows,",
 				"          LATITUDE,",
 				"          LONGITUDE,",
 				"          LOCATION",
 				"     ),",
 				"     skipDuplicateMapInputs: false,",
 				"     skipDuplicateMapOutputs: false) ~> splitViolation",
-				"SourceSILVER derive({violation_array } = split(toString(coalesce(VIOLATIONS, '')), '|')) ~> splitColumns",
-				"splitViolation derive(ViolationNumber = iif(contains(coalesce(VIOLATIONS, ''), '.'), trim(split(VIOLATIONS, '.')[0]), '')) ~> derivedColumn1"
+				"SourceSILVER derive(SplitRows = split(VIOLATIONS, '|')\r",
+				") ~> splitColumns",
+				"splitViolation derive(CleanedViolation = trim(VIOLATIONS)) ~> TrimViolation",
+				"TrimViolation derive(ViolationNumber = iif(\r",
+				"  regexMatch(CleanedViolation, '^\\\\s*\\\\d+\\\\.\\\\s*(.+)\\\\s+-\\\\s+Comments:'),\r",
+				"  trim(regexExtract(CleanedViolation, '^\\\\s*\\\\d+\\\\.\\\\s*(.+)\\\\s+-\\\\s+Comments:', 1)),\r",
+				"  'Unknown'\r",
+				")\r",
+				",",
+				"          ViolationDescription = iif(\r",
+				"    regexMatch(CleanedViolation, '^\\\\s*\\\\d+\\\\.\\\\s*([^\\\\-]+)\\\\s*-'),\r",
+				"    trim(regexExtract(CleanedViolation, '^\\\\s*\\\\d+\\\\.\\\\s*([^\\\\-]+)\\\\s*-', 1)),\r",
+				"    'Unknown'\r",
+				")\r",
+				",",
+				"          ViolationComments = iif(   regexMatch(CleanedViolation, '-\\\\s+Comments:\\\\s*(.+)$'),   trim(regexExtract(CleanedViolation, '-\\\\s+Comments:\\\\s*(.+)$', 1)),   'Unknown' )) ~> splitToColumns"
 			]
 		}
 	}
