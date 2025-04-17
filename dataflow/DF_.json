@@ -1,0 +1,78 @@
+{
+	"name": "DF_",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "Snowflake",
+						"type": "DatasetReference"
+					},
+					"name": "SourceSILVER"
+				}
+			],
+			"sinks": [],
+			"transformations": [
+				{
+					"name": "splitViolation"
+				},
+				{
+					"name": "splitColumns"
+				},
+				{
+					"name": "derivedColumn1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          INSPECTION_ID as decimal(38,0),",
+				"          DBA_NAME as string,",
+				"          AKA_NAME as string,",
+				"          LICENSE_NUMBER as double,",
+				"          FACILITY_TYPE as string,",
+				"          RISK as string,",
+				"          ADDRESS as string,",
+				"          CITY as string,",
+				"          STATE as string,",
+				"          ZIP as decimal(38,0),",
+				"          INSPECTION_DATE as timestamp,",
+				"          INSPECTION_TYPE as string,",
+				"          RESULTS as string,",
+				"          VIOLATIONS as string,",
+				"          LATITUDE as double,",
+				"          LONGITUDE as double,",
+				"          LOCATION as string,",
+				"          DI_JOB_ID as string,",
+				"          DI_LOAD_DT as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> SourceSILVER",
+				"splitColumns foldDown(unroll(violation_array ),",
+				"     mapColumn(",
+				"          INSPECTION_ID,",
+				"          DBA_NAME,",
+				"          AKA_NAME,",
+				"          LICENSE_NUMBER,",
+				"          FACILITY_TYPE,",
+				"          RISK,",
+				"          ADDRESS,",
+				"          CITY,",
+				"          STATE,",
+				"          INSPECTION_DATE,",
+				"          INSPECTION_TYPE,",
+				"          RESULTS,",
+				"          VIOLATIONS,",
+				"          LATITUDE,",
+				"          LONGITUDE,",
+				"          LOCATION",
+				"     ),",
+				"     skipDuplicateMapInputs: false,",
+				"     skipDuplicateMapOutputs: false) ~> splitViolation",
+				"SourceSILVER derive({violation_array } = split(toString(coalesce(VIOLATIONS, '')), '|')) ~> splitColumns",
+				"splitViolation derive(ViolationNumber = iif(contains(coalesce(VIOLATIONS, ''), '.'), trim(split(VIOLATIONS, '.')[0]), '')) ~> derivedColumn1"
+			]
+		}
+	}
+}
