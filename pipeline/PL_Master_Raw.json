@@ -5,6 +5,8 @@
 			{
 				"name": "Copy_RAW_Dallas2",
 				"type": "Copy",
+				"state": "Inactive",
+				"onInactiveMarkAs": "Succeeded",
 				"dependsOn": [
 					{
 						"activity": "Initial_CleanUp",
