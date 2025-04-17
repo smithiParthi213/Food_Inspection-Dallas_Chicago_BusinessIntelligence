@@ -116,7 +116,6 @@
 				"          INSPECTION_DATE,",
 				"          INSPECTION_TYPE,",
 				"          RESULTS,",
-				"          VIOLATIONS,",
 				"          LATITUDE,",
 				"          LONGITUDE,",
 				"          LOCATION,",
