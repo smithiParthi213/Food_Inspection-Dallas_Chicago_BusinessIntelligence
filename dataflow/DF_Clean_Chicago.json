@@ -33,6 +33,9 @@
 				},
 				{
 					"name": "splitToColumns"
+				},
+				{
+					"name": "CleanVIOLATION"
 				}
 			],
 			"scriptLines": [
@@ -85,7 +88,7 @@
 				"     ),",
 				"     skipDuplicateMapInputs: false,",
 				"     skipDuplicateMapOutputs: false) ~> splitViolation",
-				"SourceSILVER derive(SplitRows = split(VIOLATIONS, '|')\r",
+				"CleanVIOLATION derive(SplitRows = split(VIOLATIONS, '|')\r",
 				") ~> splitColumns",
 				"splitViolation derive(CleanedViolation = trim(VIOLATIONS)) ~> TrimViolation",
 				"TrimViolation derive(ViolationNumber = iif(     regexMatch(CleanedViolation, '^\\\\s*\\\\d+\\\\.'),     regexExtract(CleanedViolation, '^\\\\s*(\\\\d+)\\\\.', 1),     'Unknown' ),",
@@ -93,6 +96,7 @@
 				"          ViolationComments = iif(   regexMatch(CleanedViolation, '-\\\\s+Comments:\\\\s*(.+)$'),   trim(regexExtract(CleanedViolation, '-\\\\s+Comments:\\\\s*(.+)$', 1)),   'Unknown' ),",
 				"          DI_JOB_ID = $DI_JOB_ID,",
 				"          DI_LOAD_DT = currentDate()) ~> splitToColumns",
+				"SourceSILVER derive(VIOLATIONS = iif(VIOLATIONS == 'Unknown', 'N/A', VIOLATIONS)) ~> CleanVIOLATION",
 				"splitToColumns sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     deletable:false,",
