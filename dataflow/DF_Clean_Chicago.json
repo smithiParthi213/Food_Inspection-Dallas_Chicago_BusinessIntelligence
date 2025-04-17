@@ -12,7 +12,15 @@
 					"name": "SourceSILVER"
 				}
 			],
-			"sinks": [],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "Snowflake",
+						"type": "DatasetReference"
+					},
+					"name": "sinkSF"
+				}
+			],
 			"transformations": [
 				{
 					"name": "splitViolation"
@@ -28,6 +36,9 @@
 				}
 			],
 			"scriptLines": [
+				"parameters{",
+				"     DI_JOB_ID as string (\"Dale_06\")",
+				"}",
 				"source(output(",
 				"          INSPECTION_ID as decimal(38,0),",
 				"          DBA_NAME as string,",
@@ -88,7 +99,43 @@
 				"    'Unknown'\r",
 				")\r",
 				",",
-				"          ViolationComments = iif(   regexMatch(CleanedViolation, '-\\\\s+Comments:\\\\s*(.+)$'),   trim(regexExtract(CleanedViolation, '-\\\\s+Comments:\\\\s*(.+)$', 1)),   'Unknown' )) ~> splitToColumns"
+				"          ViolationComments = iif(   regexMatch(CleanedViolation, '-\\\\s+Comments:\\\\s*(.+)$'),   trim(regexExtract(CleanedViolation, '-\\\\s+Comments:\\\\s*(.+)$', 1)),   'Unknown' ),",
+				"          DI_JOB_ID = $DI_JOB_ID,",
+				"          DI_LOAD_DT = currentDate()) ~> splitToColumns",
+				"splitToColumns sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     truncate:true,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     stageInsert: true,",
+				"     mapColumn(",
+				"          INSPECTION_ID,",
+				"          DBA_NAME,",
+				"          AKA_NAME,",
+				"          LICENSE_NUMBER,",
+				"          FACILITY_TYPE,",
+				"          RISK,",
+				"          ADDRESS,",
+				"          CITY,",
+				"          STATE,",
+				"          INSPECTION_DATE,",
+				"          INSPECTION_TYPE,",
+				"          RESULTS,",
+				"          VIOLATIONS,",
+				"          LATITUDE,",
+				"          LONGITUDE,",
+				"          LOCATION,",
+				"          VIOLATION_NUMBER = ViolationNumber,",
+				"          VIOLATION_DESCRIPTION = ViolationDescription,",
+				"          VIOLATION_COMMENTS = ViolationComments,",
+				"          DI_JOB_ID,",
+				"          DI_LOAD_DT",
+				"     )) ~> sinkSF"
 			]
 		}
 	}
