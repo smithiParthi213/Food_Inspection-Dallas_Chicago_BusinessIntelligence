@@ -80,7 +80,8 @@
 				"          VIOLATIONS = SplitRows,",
 				"          LATITUDE,",
 				"          LONGITUDE,",
-				"          LOCATION",
+				"          LOCATION,",
+				"          ZIP",
 				"     ),",
 				"     skipDuplicateMapInputs: false,",
 				"     skipDuplicateMapOutputs: false) ~> splitViolation",
@@ -123,7 +124,8 @@
 				"          VIOLATION_DESCRIPTION = ViolationDescription,",
 				"          VIOLATION_COMMENTS = ViolationComments,",
 				"          DI_JOB_ID,",
-				"          DI_LOAD_DT",
+				"          DI_LOAD_DT,",
+				"          ZIP",
 				"     )) ~> sinkSF"
 			]
 		}
