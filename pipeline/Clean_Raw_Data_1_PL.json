@@ -13,9 +13,98 @@
 					"secureOutput": false,
 					"secureInput": false
 				},
-				"userProperties": []
+				"userProperties": [],
+				"typeProperties": {
+					"notebookPath": "/Shared/FoodInspection_Data_Cleaning",
+					"baseParameters": {
+						"sfURL": {
+							"value": "@pipeline().parameters.sfURL",
+							"type": "Expression"
+						},
+						"sfUser": {
+							"value": "@pipeline().parameters.sfUser",
+							"type": "Expression"
+						},
+						"sfPassword": {
+							"value": "@pipeline().parameters.sfPassword",
+							"type": "Expression"
+						},
+						"sfDatabase": {
+							"value": "@pipeline().parameters.sfDatabase",
+							"type": "Expression"
+						},
+						"sourceSchema": {
+							"value": "@pipeline().parameters.sourceSchema",
+							"type": "Expression"
+						},
+						"sfWarehouse": {
+							"value": "@pipeline().parameters.sfWarehouse",
+							"type": "Expression"
+						},
+						"sfRole": {
+							"value": "@pipeline().parameters.sfRole",
+							"type": "Expression"
+						},
+						"targetSchema": {
+							"value": "@pipeline().parameters.targetSchema",
+							"type": "Expression"
+						},
+						"srcTable": {
+							"value": "@pipeline().parameters.srcTable",
+							"type": "Expression"
+						},
+						"targetTable": {
+							"value": "@pipeline().parameters.targetTable",
+							"type": "Expression"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "AzureDatabricks_LS",
+					"type": "LinkedServiceReference"
+				}
 			}
 		],
+		"parameters": {
+			"sfURL": {
+				"type": "string",
+				"defaultValue": "AQDGCDE-JLA48380.snowflakecomputing.com"
+			},
+			"sfUser": {
+				"type": "string",
+				"defaultValue": "ADF_USER"
+			},
+			"sfPassword": {
+				"type": "string",
+				"defaultValue": "adfuser_dadabiGroup@005"
+			},
+			"sfDatabase": {
+				"type": "string",
+				"defaultValue": "FOOD_INSPECTION_DB"
+			},
+			"sourceSchema": {
+				"type": "string",
+				"defaultValue": "BRONZE"
+			},
+			"sfWarehouse": {
+				"type": "string",
+				"defaultValue": "DADABI_WH"
+			},
+			"sfRole": {
+				"type": "string",
+				"defaultValue": "DEV_ROLE"
+			},
+			"targetSchema": {
+				"type": "string",
+				"defaultValue": "SILVER"
+			},
+			"srcTable": {
+				"type": "string"
+			},
+			"targetTable": {
+				"type": "string"
+			}
+		},
 		"annotations": []
 	}
 }
