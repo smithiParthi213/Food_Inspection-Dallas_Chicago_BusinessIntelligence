@@ -1,0 +1,53 @@
+{
+	"name": "dataflow1",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"name": "sourceChicagoSTG"
+				},
+				{
+					"name": "sourceDallasSTG"
+				},
+				{
+					"name": "dimInspectionType"
+				},
+				{
+					"name": "dimRisk"
+				},
+				{
+					"name": "dimResult"
+				},
+				{
+					"name": "dimFacilityType"
+				}
+			],
+			"sinks": [],
+			"transformations": [
+				{
+					"name": "joinRisk"
+				}
+			],
+			"scriptLines": [
+				"source(allowSchemaDrift: true,",
+				"     validateSchema: false) ~> sourceChicagoSTG",
+				"source(allowSchemaDrift: true,",
+				"     validateSchema: false) ~> sourceDallasSTG",
+				"source(allowSchemaDrift: true,",
+				"     validateSchema: false) ~> dimInspectionType",
+				"source(allowSchemaDrift: true,",
+				"     validateSchema: false) ~> dimRisk",
+				"source(allowSchemaDrift: true,",
+				"     validateSchema: false) ~> dimResult",
+				"source(allowSchemaDrift: true,",
+				"     validateSchema: false) ~> dimFacilityType",
+				"dimInspectionType, dimRisk join(ERROR_FUNCTION('') == ERROR_FUNCTION(''),",
+				"     joinType:'left',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> joinRisk"
+			]
+		}
+	}
+}
