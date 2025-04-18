@@ -43,9 +43,15 @@
 				},
 				{
 					"name": "surrogateKey1"
+				},
+				{
+					"name": "derivedColumn2"
 				}
 			],
 			"scriptLines": [
+				"parameters{",
+				"     DI_JOB_ID as string (\"Dale_06\")",
+				"}",
 				"source(output(",
 				"          SK_ID as decimal(38,0),",
 				"          INSPECTION_ID as decimal(38,0),",
@@ -120,7 +126,9 @@
 				"unionDATA keyGenerate(output(VIOLATION_SK as long),",
 				"     startAt: 1L,",
 				"     stepValue: 1L) ~> surrogateKey1",
-				"surrogateKey1 sink(allowSchemaDrift: true,",
+				"surrogateKey1 derive(DI_JOB_ID = $DI_JOB_ID,",
+				"          DI_LOAD_DT = currentDate()) ~> derivedColumn2",
+				"derivedColumn2 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     deletable:false,",
 				"     insertable:true,",
@@ -135,7 +143,9 @@
 				"          VIOLATION_CODE = VIOLATION_NUMBER,",
 				"          VIOLATION_DESCRIPTION,",
 				"          VIOLATION_DETAIL = VIOLATION_DETAILS,",
-				"          VIOLATION_SK",
+				"          VIOLATION_SK,",
+				"          DI_JOB_ID,",
+				"          DI_LOAD_DT",
 				"     )) ~> sinkVIOLATION"
 			]
 		}
