@@ -1,5 +1,5 @@
 {
-	"name": "dataflow1",
+	"name": "DF_INSPECTION",
 	"properties": {
 		"type": "MappingDataFlow",
 		"typeProperties": {
@@ -10,9 +10,6 @@
 						"type": "DatasetReference"
 					},
 					"name": "source1"
-				},
-				{
-					"name": "source2"
 				}
 			],
 			"sinks": [
@@ -33,6 +30,9 @@
 				},
 				{
 					"name": "select1"
+				},
+				{
+					"name": "aggregate1"
 				}
 			],
 			"scriptLines": [
@@ -65,11 +65,9 @@
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     format: 'table') ~> source1",
-				"source(allowSchemaDrift: true,",
-				"     validateSchema: false) ~> source2",
 				"surrogateKey1 derive(DI_JOB_ID = $JOB_ID,",
 				"          DI_LOAD_DT = currentTimestamp()) ~> derivedColumn1",
-				"source1 keyGenerate(output(INSPECTION_TYPE_SK as long),",
+				"aggregate1 keyGenerate(output(INSPECTION_TYPE_SK as long),",
 				"     startAt: 1L,",
 				"     stepValue: 1L) ~> surrogateKey1",
 				"derivedColumn1 select(mapColumn(",
@@ -80,6 +78,25 @@
 				"     ),",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true) ~> select1",
+				"source1 aggregate(groupBy(INSPECTION_ID,",
+				"          DBA_NAME,",
+				"          AKA_NAME,",
+				"          LICENSE_NUMBER,",
+				"          FACILITY_TYPE,",
+				"          RISK,",
+				"          ADDRESS,",
+				"          CITY,",
+				"          STATE,",
+				"          ZIP,",
+				"          INSPECTION_DATE,",
+				"          INSPECTION_TYPE,",
+				"          RESULTS,",
+				"          VIOLATION_NUMBER,",
+				"          VIOLATION_DESCRIPTION,",
+				"          VIOLATION_COMMENTS,",
+				"          LATITUDE,",
+				"          LONGITUDE,",
+				"          LOCATION)) ~> aggregate1",
 				"select1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     deletable:false,",
