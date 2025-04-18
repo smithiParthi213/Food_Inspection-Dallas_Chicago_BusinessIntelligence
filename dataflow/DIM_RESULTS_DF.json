@@ -1,5 +1,5 @@
 {
-	"name": "DF_INSPECTION",
+	"name": "DIM_RESULTS_DF",
 	"properties": {
 		"type": "MappingDataFlow",
 		"typeProperties": {
@@ -33,6 +33,9 @@
 				},
 				{
 					"name": "aggregateiNSPECTIONID"
+				},
+				{
+					"name": "select2"
 				}
 			],
 			"scriptLines": [
@@ -67,30 +70,42 @@
 				"     format: 'table') ~> sourceSILVER",
 				"surrogateKey derive(DI_JOB_ID = $JOB_ID,",
 				"          DI_LOAD_DT = currentTimestamp()) ~> derivedColumn1",
-				"aggregateiNSPECTIONID keyGenerate(output(INSPECTION_TYPE_SK as long),",
+				"aggregateiNSPECTIONID keyGenerate(output(RESULT_SK as long),",
 				"     startAt: 1L,",
 				"     stepValue: 1L) ~> surrogateKey",
 				"derivedColumn1 select(mapColumn(",
-				"          INSPECTION_TYPE_SK,",
-				"          INSPECTION_TYPE,",
+				"          RESULT_SK,",
+				"          RESULTS,",
 				"          DI_JOB_ID,",
 				"          DI_LOAD_DT",
 				"     ),",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true) ~> select1",
-				"sourceSILVER aggregate(groupBy(INSPECTION_TYPE,",
-				"          LICENSE_NUMBER),",
-				"     INSPECTION_ID = count(INSPECTION_ID)) ~> aggregateiNSPECTIONID",
+				"select2 aggregate(groupBy(RESULTS),",
+				"     COUNT_ROW = count(INSPECTION_ID)) ~> aggregateiNSPECTIONID",
+				"sourceSILVER select(mapColumn(",
+				"          INSPECTION_ID,",
+				"          RESULTS",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select2",
 				"select1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     deletable:false,",
 				"     insertable:true,",
 				"     updateable:false,",
 				"     upsertable:false,",
+				"     truncate:true,",
 				"     format: 'table',",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
-				"     stageInsert: true) ~> sink1"
+				"     stageInsert: true,",
+				"     mapColumn(",
+				"          RESULT_SK,",
+				"          RESULTS,",
+				"          DI_JOB_ID,",
+				"          DI_LOAD_DT",
+				"     )) ~> sink1"
 			]
 		}
 	}

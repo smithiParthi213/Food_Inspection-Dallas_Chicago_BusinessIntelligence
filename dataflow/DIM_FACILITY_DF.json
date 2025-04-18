@@ -101,8 +101,8 @@
 				"     skipDuplicateMapOutputs: true,",
 				"     stageInsert: true,",
 				"     mapColumn(",
-				"          RISK_SK = FACILITY_SK,",
-				"          RISK = FACILTY_TYPE,",
+				"          FACILITY_SK,",
+				"          FACILITY_TYPE = FACILTY_TYPE,",
 				"          DI_JOB_ID,",
 				"          DI_LOAD_DT",
 				"     )) ~> sink1"
