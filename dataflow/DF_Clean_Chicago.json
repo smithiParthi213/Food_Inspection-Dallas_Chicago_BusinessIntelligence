@@ -19,6 +19,13 @@
 						"type": "DatasetReference"
 					},
 					"name": "sinkSF"
+				},
+				{
+					"dataset": {
+						"referenceName": "Parquet_ADLS",
+						"type": "DatasetReference"
+					},
+					"name": "sinkADLS"
 				}
 			],
 			"transformations": [
@@ -88,8 +95,7 @@
 				"     ),",
 				"     skipDuplicateMapInputs: false,",
 				"     skipDuplicateMapOutputs: false) ~> splitViolation",
-				"CleanVIOLATION derive(SplitRows = split(VIOLATIONS, '|')\r",
-				") ~> splitColumns",
+				"CleanVIOLATION derive(SplitRows = split(VIOLATIONS, '|')) ~> splitColumns",
 				"splitViolation derive(CleanedViolation = trim(VIOLATIONS)) ~> TrimViolation",
 				"TrimViolation derive(ViolationNumber = iif(     regexMatch(CleanedViolation, '^\\\\s*\\\\d+\\\\.'),     regexExtract(CleanedViolation, '^\\\\s*(\\\\d+)\\\\.', 1),     'N/A' ),",
 				"          ViolationDescription = iif(  regexMatch(CleanedViolation, '^\\\\s*\\\\d+\\\\.\\\\s*(.+)\\\\s+-\\\\s+Comments:'),  trim(regexExtract(CleanedViolation, '^\\\\s*\\\\d+\\\\.\\\\s*(.+)\\\\s+-\\\\s+Comments:', 1)),  'N/A'),",
@@ -130,7 +136,15 @@
 				"          DI_JOB_ID,",
 				"          DI_LOAD_DT,",
 				"          ZIP",
-				"     )) ~> sinkSF"
+				"     )) ~> sinkSF",
+				"splitToColumns sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'parquet',",
+				"     umask: 0022,",
+				"     preCommands: [],",
+				"     postCommands: [],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sinkADLS"
 			]
 		}
 	}

@@ -1,5 +1,5 @@
 {
-	"name": "Clean_STG2_Data_PL",
+	"name": "PL_Chicago_STG2_Transformation",
 	"properties": {
 		"activities": [
 			{
@@ -29,6 +29,10 @@
 							"sinkSF": {
 								"schema": "SILVER",
 								"tableName": "CHICAGO_FOOD_INSPECTIONS_STG2"
+							},
+							"sinkADLS": {
+								"container": "silver",
+								"directory": "stg_2/chicago"
 							}
 						}
 					},
