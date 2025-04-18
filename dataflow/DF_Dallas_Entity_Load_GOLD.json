@@ -1,5 +1,5 @@
 {
-	"name": "DF_Dallas_Entity_Load",
+	"name": "DF_Dallas_Entity_Load_GOLD",
 	"properties": {
 		"type": "MappingDataFlow",
 		"typeProperties": {
