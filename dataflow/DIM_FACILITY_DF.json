@@ -102,7 +102,7 @@
 				"     stageInsert: true,",
 				"     mapColumn(",
 				"          FACILITY_SK,",
-				"          FACILTY_TYPE,",
+				"          FACILITY_TYPE = FACILTY_TYPE,",
 				"          DI_JOB_ID,",
 				"          DI_LOAD_DT",
 				"     )) ~> sink1"
