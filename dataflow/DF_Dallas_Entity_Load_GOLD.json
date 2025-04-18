@@ -1,0 +1,167 @@
+{
+	"name": "DF_Dallas_Entity_Load_GOLD",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "Snowflake",
+						"type": "DatasetReference"
+					},
+					"name": "sourceDallasSTG2"
+				},
+				{
+					"dataset": {
+						"referenceName": "Snowflake",
+						"type": "DatasetReference"
+					},
+					"name": "MaxIDEntityDIM"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "Snowflake",
+						"type": "DatasetReference"
+					},
+					"name": "sinkSnfGold"
+				}
+			],
+			"transformations": [
+				{
+					"name": "selectReqCols"
+				},
+				{
+					"name": "derivedCols"
+				},
+				{
+					"name": "selectSINKCols"
+				},
+				{
+					"name": "aggregateCols"
+				},
+				{
+					"name": "surrogateKey"
+				},
+				{
+					"name": "joinSK"
+				}
+			],
+			"scriptLines": [
+				"parameters{",
+				"     job_id as string (\"SP_001\")",
+				"}",
+				"source(output(",
+				"          SK_ID as string,",
+				"          INSPECTION_ID as decimal(38,0),",
+				"          RESTAURANT_NAME as string,",
+				"          INSPECTION_TYPE as string,",
+				"          INSPECTION_DATE as date,",
+				"          INSPECTION_SCORE as decimal(38,0),",
+				"          STREET_NUMBER as decimal(38,0),",
+				"          STREET_NAME as string,",
+				"          STREET_DIRECTION as string,",
+				"          STREET_TYPE as string,",
+				"          STREET_UNIT as string,",
+				"          STREET_ADDRESS as string,",
+				"          ZIP_CODE as decimal(38,0),",
+				"          VIOLATION_NUMBER as decimal(38,0),",
+				"          VIOLATION_DESCRIPTION as string,",
+				"          VIOLATION_POINTS as decimal(38,0),",
+				"          VIOLATION_DETAILS as string,",
+				"          VIOLATION_MEMO as string,",
+				"          INSPECTION_MONTH as string,",
+				"          INSPECTION_YEAR as string,",
+				"          LATITUDE as double,",
+				"          LONGITUDE as double,",
+				"          DI_JOB_ID as string,",
+				"          DI_LOAD_DT as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> sourceDallasSTG2",
+				"source(output(",
+				"          MAX_ENTITYSK as integer",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     query: 'select NVL(MAX(ENTITY_SK),0) as Max_EntitySK from FOOD_INSPECTION_DB.GOLD.DIM_ENTITY',",
+				"     format: 'query') ~> MaxIDEntityDIM",
+				"sourceDallasSTG2 select(mapColumn(",
+				"          DBA_NAME = RESTAURANT_NAME,",
+				"          STREET_ADDRESS,",
+				"          ZIP_CODE,",
+				"          LATITUDE,",
+				"          LONGITUDE",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> selectReqCols",
+				"joinSK derive(ENTITY_SK = my_sk + MAX_ENTITYSK,",
+				"          AKA_NAME = 'N/A - Not Applicable for Dallas',",
+				"          LICENSE_NUMBER = 'N/A - Not Applicable for Dallas',",
+				"          STATE = 'Texas',",
+				"          CITY = 'Dallas',",
+				"          ENTITY_TYPE = 'Restaurant',",
+				"          di_job_id = $job_id,",
+				"          di_load_dt = currentDate()) ~> derivedCols",
+				"derivedCols select(mapColumn(",
+				"          ENTITY_SK,",
+				"          DBA_NAME,",
+				"          AKA_NAME,",
+				"          ENTITY_TYPE,",
+				"          LICENSE_NUMBER,",
+				"          STREET_ADDRESS,",
+				"          CITY,",
+				"          STATE,",
+				"          ZIP_CODE,",
+				"          LATITUDE,",
+				"          LONGITUDE,",
+				"          DI_JOB_ID = di_job_id,",
+				"          DI_LOAD_DT = di_load_dt",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> selectSINKCols",
+				"selectReqCols aggregate(groupBy(DBA_NAME,",
+				"          STREET_ADDRESS,",
+				"          ZIP_CODE,",
+				"          LATITUDE,",
+				"          LONGITUDE),",
+				"     row_count = count()) ~> aggregateCols",
+				"aggregateCols keyGenerate(output(my_sk as long),",
+				"     startAt: 1L,",
+				"     stepValue: 1L) ~> surrogateKey",
+				"surrogateKey, MaxIDEntityDIM join(1==1,",
+				"     joinType:'cross',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> joinSK",
+				"selectSINKCols sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     stageInsert: true,",
+				"     mapColumn(",
+				"          ENTITY_SK,",
+				"          DBA_NAME,",
+				"          AKA_NAME,",
+				"          ENTITY_TYPE,",
+				"          LICENSE_NUMBER,",
+				"          STREET_ADDRESS,",
+				"          CITY,",
+				"          STATE,",
+				"          ZIP_CODE,",
+				"          LATITUDE,",
+				"          LONGITUDE,",
+				"          DI_JOB_ID,",
+				"          DI_LOAD_DT",
+				"     )) ~> sinkSnfGold"
+			]
+		}
+	}
+}

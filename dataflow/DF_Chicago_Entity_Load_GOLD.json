@@ -1,5 +1,5 @@
 {
-	"name": "DIM_ENTITY_CHICAGO",
+	"name": "DF_Chicago_Entity_Load_GOLD",
 	"properties": {
 		"type": "MappingDataFlow",
 		"typeProperties": {
@@ -16,7 +16,7 @@
 						"referenceName": "Snowflake",
 						"type": "DatasetReference"
 					},
-					"name": "MaxID"
+					"name": "MaxIDEntityDim"
 				}
 			],
 			"sinks": [
@@ -25,13 +25,10 @@
 						"referenceName": "Snowflake",
 						"type": "DatasetReference"
 					},
-					"name": "sink1"
+					"name": "sinkSnfGold"
 				}
 			],
 			"transformations": [
-				{
-					"name": "derivedColumn"
-				},
 				{
 					"name": "selectColumnsChicago"
 				},
@@ -39,15 +36,21 @@
 					"name": "surrogateKey"
 				},
 				{
-					"name": "join"
+					"name": "joinSK"
 				},
 				{
-					"name": "aggregate1"
+					"name": "aggregateCols"
+				},
+				{
+					"name": "derivedCoLS"
+				},
+				{
+					"name": "selectSinkCols"
 				}
 			],
 			"scriptLines": [
 				"parameters{",
-				"     JOB_ID as string (\"AN11\")",
+				"     JOB_ID as string (\"SP_001\")",
 				"}",
 				"source(output(",
 				"          SK_ID as string,",
@@ -81,41 +84,60 @@
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     query: 'select NVL(MAX(ENTITY_SK),0) as  MAX_ID_SK from FOOD_INSPECTION_DB.GOLD.DIM_ENTITY',",
-				"     format: 'query') ~> MaxID",
-				"selectColumnsChicago derive(DI_LOAD_DT = currentTimestamp(),",
-				"          DI_JOB_ID = $JOB_ID) ~> derivedColumn",
-				"aggregate1 select(mapColumn(",
+				"     format: 'query') ~> MaxIDEntityDim",
+				"aggregateCols select(mapColumn(",
 				"          DBA_NAME,",
 				"          AKA_NAME,",
 				"          LICENSE_NUMBER,",
-				"          ADDRESS,",
+				"          ENTITY_TYPE = FACILITY_TYPE,",
+				"          STREET_ADDRESS = ADDRESS,",
 				"          CITY,",
 				"          STATE,",
-				"          ZIP,",
+				"          ZIP_CODE = ZIP,",
 				"          LATITUDE,",
 				"          LONGITUDE",
 				"     ),",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true) ~> selectColumnsChicago",
-				"derivedColumn keyGenerate(output(ENTITY_SK as long),",
+				"selectColumnsChicago keyGenerate(output(my_sk as long),",
 				"     startAt: 1L,",
 				"     stepValue: 1L) ~> surrogateKey",
-				"surrogateKey, MaxID join(1==1,",
+				"surrogateKey, MaxIDEntityDim join(1==1,",
 				"     joinType:'cross',",
 				"     matchType:'exact',",
 				"     ignoreSpaces: false,",
-				"     broadcast: 'auto')~> join",
+				"     broadcast: 'auto')~> joinSK",
 				"sourceChicago aggregate(groupBy(DBA_NAME,",
 				"          AKA_NAME,",
 				"          LICENSE_NUMBER,",
+				"          FACILITY_TYPE,",
 				"          ADDRESS,",
 				"          CITY,",
 				"          STATE,",
 				"          ZIP,",
 				"          LATITUDE,",
 				"          LONGITUDE),",
-				"     count_row = count(1)) ~> aggregate1",
-				"join sink(allowSchemaDrift: true,",
+				"     count_row = count(1)) ~> aggregateCols",
+				"joinSK derive(ENTITY_SK = my_sk + MAX_ID_SK,",
+				"          DI_JOB_ID = $JOB_ID,",
+				"          DI_LOAD_DT = currentDate()) ~> derivedCoLS",
+				"derivedCoLS select(mapColumn(",
+				"          ENTITY_SK,",
+				"          DBA_NAME,",
+				"          AKA_NAME,",
+				"          LICENSE_NUMBER,",
+				"          ADDRESS = STREET_ADDRESS,",
+				"          CITY,",
+				"          STATE,",
+				"          ZIP = ZIP_CODE,",
+				"          LATITUDE,",
+				"          LONGITUDE,",
+				"          DI_JOB_ID,",
+				"          DI_LOAD_DT",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> selectSinkCols",
+				"selectSinkCols sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     deletable:false,",
 				"     insertable:true,",
@@ -125,7 +147,7 @@
 				"     format: 'table',",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
-				"     stageInsert: true) ~> sink1"
+				"     stageInsert: true) ~> sinkSnfGold"
 			]
 		}
 	}
