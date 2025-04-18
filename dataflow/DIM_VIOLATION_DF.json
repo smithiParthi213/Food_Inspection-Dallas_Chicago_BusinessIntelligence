@@ -126,7 +126,7 @@
 				"unionDATA keyGenerate(output(VIOLATION_SK as long),",
 				"     startAt: 1L,",
 				"     stepValue: 1L) ~> surrogateKey1",
-				"surrogateKey1 derive(DII_JOB_ID = $DI_JOB_ID,",
+				"surrogateKey1 derive(DI_JOB_ID = $DI_JOB_ID,",
 				"          DI_LOAD_DT = currentDate()) ~> derivedColumn2",
 				"derivedColumn2 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
@@ -144,7 +144,7 @@
 				"          VIOLATION_DESCRIPTION,",
 				"          VIOLATION_DETAIL = VIOLATION_DETAILS,",
 				"          VIOLATION_SK,",
-				"          DII_JOB_ID,",
+				"          DI_JOB_ID,",
 				"          DI_LOAD_DT",
 				"     )) ~> sinkVIOLATION"
 			]
