@@ -10,6 +10,13 @@
 						"type": "DatasetReference"
 					},
 					"name": "SourceSILVER"
+				},
+				{
+					"dataset": {
+						"referenceName": "Snowflake",
+						"type": "DatasetReference"
+					},
+					"name": "MaxIDChicagoStg2"
 				}
 			],
 			"sinks": [
@@ -18,7 +25,7 @@
 						"referenceName": "Snowflake",
 						"type": "DatasetReference"
 					},
-					"name": "sinkSF"
+					"name": "sinkSNF"
 				},
 				{
 					"dataset": {
@@ -43,6 +50,18 @@
 				},
 				{
 					"name": "CleanVIOLATION"
+				},
+				{
+					"name": "TrimQuotes"
+				},
+				{
+					"name": "surrogateKey1"
+				},
+				{
+					"name": "join1"
+				},
+				{
+					"name": "SkCreation"
 				}
 			],
 			"scriptLines": [
@@ -73,6 +92,13 @@
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     format: 'table') ~> SourceSILVER",
+				"source(output(",
+				"          MAX_SK_ID as integer",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     query: 'select NVL(MAX(SK_ID),0) as Max_SK_ID from FOOD_INSPECTION_DB.SILVER.CHICAGO_FOOD_INSPECTIONS_STG2',",
+				"     format: 'query') ~> MaxIDChicagoStg2",
 				"splitColumns foldDown(unroll(SplitRows),",
 				"     mapColumn(",
 				"          INSPECTION_ID,",
@@ -95,26 +121,47 @@
 				"     ),",
 				"     skipDuplicateMapInputs: false,",
 				"     skipDuplicateMapOutputs: false) ~> splitViolation",
-				"CleanVIOLATION derive(SplitRows = split(VIOLATIONS, '|')) ~> splitColumns",
-				"splitViolation derive(CleanedViolation = trim(VIOLATIONS)) ~> TrimViolation",
-				"TrimViolation derive(ViolationNumber = iif(     regexMatch(CleanedViolation, '^\\\\s*\\\\d+\\\\.'),     regexExtract(CleanedViolation, '^\\\\s*(\\\\d+)\\\\.', 1),     'N/A' ),",
-				"          ViolationDescription = iif(  regexMatch(CleanedViolation, '^\\\\s*\\\\d+\\\\.\\\\s*(.+)\\\\s+-\\\\s+Comments:'),  trim(regexExtract(CleanedViolation, '^\\\\s*\\\\d+\\\\.\\\\s*(.+)\\\\s+-\\\\s+Comments:', 1)),  'N/A'),",
-				"          ViolationComments = iif(   regexMatch(CleanedViolation, '-\\\\s+Comments:\\\\s*(.+)$'),   trim(regexExtract(CleanedViolation, '-\\\\s+Comments:\\\\s*(.+)$', 1)),   'N/A' ),",
+				"TrimQuotes derive(SplitRows = split(trim(VIOLATIONS), '|')\r",
+				") ~> splitColumns",
+				"splitViolation derive(VIOLATIONS = trim(VIOLATIONS)) ~> TrimViolation",
+				"TrimViolation derive(ViolationNumber = iif(regexMatch(VIOLATIONS, '^\\\\s*\\\\d+\\\\.'), toInteger(regexExtract(VIOLATIONS, '^\\\\s*(\\\\d+)\\\\.', 1)), -1)\r",
+				",",
+				"          ViolationDescription = iif(\r",
+				"  regexMatch(VIOLATIONS, '^\\\\s*\\\\d+\\\\.\\\\s*(.+?)\\\\s*-\\\\s+Comments:'),\r",
+				"  trim(regexExtract(VIOLATIONS, '^\\\\s*\\\\d+\\\\.\\\\s*(.+?)\\\\s*-\\\\s+Comments:', 1)),\r",
+				"  'N/A'\r",
+				"),",
+				"          ViolationComments = iif(regexMatch(VIOLATIONS, '-\\\\s+Comments:\\\\s*(.+)$'),trim(regexExtract(VIOLATIONS, '-\\\\s+Comments:\\\\s*(.+)$', 1)),   'N/A' ),",
 				"          DI_JOB_ID = $DI_JOB_ID,",
 				"          DI_LOAD_DT = currentDate()) ~> splitToColumns",
 				"SourceSILVER derive(VIOLATIONS = iif(VIOLATIONS == 'Unknown', 'N/A', VIOLATIONS)) ~> CleanVIOLATION",
-				"splitToColumns sink(allowSchemaDrift: true,",
+				"CleanVIOLATION derive(VIOLATIONS = regexReplace(VIOLATIONS, '^\\\"|\\\"$', '')\r",
+				") ~> TrimQuotes",
+				"splitToColumns keyGenerate(output(my_sk as long),",
+				"     startAt: 1L,",
+				"     stepValue: 1L) ~> surrogateKey1",
+				"surrogateKey1, MaxIDChicagoStg2 join(1==1,",
+				"     joinType:'cross',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join1",
+				"join1 derive(SK_ID = concat('Chicago_', toString(my_sk+MAX_SK_ID))\r",
+				",",
+				"          INSPECTION_DATE = toDate(INSPECTION_DATE),",
+				"          job_id = $DI_JOB_ID,",
+				"          load_date = currentDate()) ~> SkCreation",
+				"SkCreation sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     deletable:false,",
 				"     insertable:true,",
 				"     updateable:false,",
 				"     upsertable:false,",
-				"     truncate:true,",
 				"     format: 'table',",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
 				"     stageInsert: true,",
 				"     mapColumn(",
+				"          SK_ID,",
 				"          INSPECTION_ID,",
 				"          DBA_NAME,",
 				"          AKA_NAME,",
@@ -124,20 +171,19 @@
 				"          ADDRESS,",
 				"          CITY,",
 				"          STATE,",
+				"          ZIP,",
 				"          INSPECTION_DATE,",
 				"          INSPECTION_TYPE,",
 				"          RESULTS,",
 				"          LATITUDE,",
 				"          LONGITUDE,",
-				"          LOCATION,",
 				"          VIOLATION_NUMBER = ViolationNumber,",
 				"          VIOLATION_DESCRIPTION = ViolationDescription,",
 				"          VIOLATION_COMMENTS = ViolationComments,",
-				"          DI_JOB_ID,",
-				"          DI_LOAD_DT,",
-				"          ZIP",
-				"     )) ~> sinkSF",
-				"splitToColumns sink(allowSchemaDrift: true,",
+				"          DI_JOB_ID = job_id,",
+				"          DI_LOAD_DT = load_date",
+				"     )) ~> sinkSNF",
+				"SkCreation sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     format: 'parquet',",
 				"     umask: 0022,",

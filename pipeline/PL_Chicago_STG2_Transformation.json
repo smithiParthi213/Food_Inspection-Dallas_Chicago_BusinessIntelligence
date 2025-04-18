@@ -26,7 +26,11 @@
 								"schema": "SILVER",
 								"tableName": "CHICAGO_FOOD_INSPECTIONS_STG1"
 							},
-							"sinkSF": {
+							"MaxIDChicagoStg2": {
+								"schema": "SILVER",
+								"tableName": "CHICAGO_FOOD_INSPECTIONS_STG2"
+							},
+							"sinkSNF": {
 								"schema": "SILVER",
 								"tableName": "CHICAGO_FOOD_INSPECTIONS_STG2"
 							},
