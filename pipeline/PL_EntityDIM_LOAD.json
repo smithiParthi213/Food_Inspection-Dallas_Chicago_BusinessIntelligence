@@ -42,6 +42,13 @@
 				},
 				"userProperties": [],
 				"typeProperties": {
+					"dataflow": {
+						"referenceName": "DF_Dallas_Entity_Load",
+						"type": "DataFlowReference",
+						"parameters": {
+							"job_id": "\"SP_001\""
+						}
+					},
 					"compute": {
 						"coreCount": 8,
 						"computeType": "General"
