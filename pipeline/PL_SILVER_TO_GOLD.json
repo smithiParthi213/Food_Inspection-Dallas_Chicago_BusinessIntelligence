@@ -1,0 +1,84 @@
+{
+	"name": "PL_SILVER_TO_GOLD",
+	"properties": {
+		"activities": [
+			{
+				"name": "PL_INSPECTION",
+				"type": "ExecuteDataFlow",
+				"state": "Inactive",
+				"onInactiveMarkAs": "Succeeded",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "DF_INSPECTION",
+						"type": "DataFlowReference",
+						"parameters": {
+							"JOB_ID": "\"AN11\""
+						},
+						"datasetParameters": {
+							"sourceSILVER": {
+								"schema": "SILVER",
+								"tableName": "CHICAGO_FOOD_INSPECTIONS_STG2"
+							},
+							"sink1": {
+								"schema": "GOLD",
+								"tableName": "DIM_INSPECTIONTYPE"
+							}
+						}
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			},
+			{
+				"name": "PL_RESULTS",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "DF_RESULTS",
+						"type": "DataFlowReference",
+						"parameters": {
+							"JOB_ID": "\"AN11\""
+						},
+						"datasetParameters": {
+							"sourceSILVER": {
+								"schema": "SILVER",
+								"tableName": "CHICAGO_FOOD_INSPECTIONS_STG2"
+							},
+							"sink1": {
+								"schema": "GOLD",
+								"tableName": "DIM_RESULT"
+							}
+						}
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			}
+		],
+		"annotations": []
+	}
+}
