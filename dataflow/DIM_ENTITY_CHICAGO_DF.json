@@ -39,10 +39,10 @@
 					"name": "surrogateKey"
 				},
 				{
-					"name": "aggregate"
+					"name": "join"
 				},
 				{
-					"name": "join"
+					"name": "aggregate1"
 				}
 			],
 			"scriptLines": [
@@ -75,9 +75,12 @@
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     format: 'table') ~> sourceChicago",
-				"source(allowSchemaDrift: true,",
+				"source(output(",
+				"          MAX_ID_SK as decimal(30,0)",
+				"     ),",
+				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
-				"     query: 'select NVL(MAX(ENTITY_SK),0) as Max_SK_ID from FOOD_INSPECTION_DB.SILVER.CHICAGO_FOOD_INSPECTIONS_STG2\\n ',",
+				"     query: 'select NVL(MAX(ENTITY_SK),0) as  MAX_ID_SK from FOOD_INSPECTION_DB.GOLD.DIM_ENTITY',",
 				"     format: 'query') ~> MaxID",
 				"selectColumnsChicago derive(DI_LOAD_DT = currentTimestamp(),",
 				"          DI_JOB_ID = $JOB_ID) ~> derivedColumn",
@@ -97,14 +100,14 @@
 				"derivedColumn keyGenerate(output(ENTITY_SK as long),",
 				"     startAt: 1L,",
 				"     stepValue: 1L) ~> surrogateKey",
-				"join aggregate(groupBy(DBA_NAME),",
-				"     COUNT_ROW = count(DBA_NAME)) ~> aggregate",
 				"surrogateKey, MaxID join(1==1,",
 				"     joinType:'cross',",
 				"     matchType:'exact',",
 				"     ignoreSpaces: false,",
 				"     broadcast: 'auto')~> join",
-				"aggregate sink(allowSchemaDrift: true,",
+				"join aggregate(groupBy(DBA_NAME),",
+				"     COUNT_ROW = count(DBA_NAME)) ~> aggregate1",
+				"aggregate1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     deletable:false,",
 				"     insertable:true,",
