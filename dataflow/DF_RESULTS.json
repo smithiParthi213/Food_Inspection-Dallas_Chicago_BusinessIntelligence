@@ -33,6 +33,9 @@
 				},
 				{
 					"name": "aggregateiNSPECTIONID"
+				},
+				{
+					"name": "select2"
 				}
 			],
 			"scriptLines": [
@@ -78,9 +81,14 @@
 				"     ),",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true) ~> select1",
-				"sourceSILVER aggregate(groupBy(INSPECTION_TYPE,",
-				"          RESULTS),",
-				"     INSPECTION_ID = count(RESULTS)) ~> aggregateiNSPECTIONID",
+				"select2 aggregate(groupBy(RESULTS),",
+				"     COUNT_ROW = count(INSPECTION_ID)) ~> aggregateiNSPECTIONID",
+				"sourceSILVER select(mapColumn(",
+				"          INSPECTION_ID,",
+				"          RESULTS",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select2",
 				"select1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     deletable:false,",
