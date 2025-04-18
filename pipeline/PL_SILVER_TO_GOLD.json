@@ -3,7 +3,7 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "PL_INSPECTION",
+				"name": "DIM_INSPECTION",
 				"type": "ExecuteDataFlow",
 				"state": "Inactive",
 				"onInactiveMarkAs": "Succeeded",
@@ -42,7 +42,7 @@
 				}
 			},
 			{
-				"name": "PL_RESULTS",
+				"name": "DIM_RESULTS",
 				"type": "ExecuteDataFlow",
 				"dependsOn": [],
 				"policy": {
