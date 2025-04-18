@@ -1,5 +1,5 @@
 {
-	"name": "DF_INSPECTION",
+	"name": "DIM_INSPECTION_DF",
 	"properties": {
 		"type": "MappingDataFlow",
 		"typeProperties": {

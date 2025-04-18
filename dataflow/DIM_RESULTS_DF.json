@@ -1,5 +1,5 @@
 {
-	"name": "DF_RESULTS",
+	"name": "DIM_RESULTS_DF",
 	"properties": {
 		"type": "MappingDataFlow",
 		"typeProperties": {

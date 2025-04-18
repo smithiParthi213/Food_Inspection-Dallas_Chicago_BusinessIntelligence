@@ -16,7 +16,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"dataflow": {
-						"referenceName": "DF_INSPECTION",
+						"referenceName": "DIM_INSPECTION_DF",
 						"type": "DataFlowReference",
 						"parameters": {
 							"JOB_ID": "\"AN11\""
@@ -60,7 +60,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"dataflow": {
-						"referenceName": "DF_RESULTS",
+						"referenceName": "DIM_RESULTS_DF",
 						"type": "DataFlowReference",
 						"parameters": {
 							"JOB_ID": "\"AN11\""
@@ -73,6 +73,94 @@
 							"sink1": {
 								"schema": "GOLD",
 								"tableName": "DIM_RESULT"
+							}
+						}
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			},
+			{
+				"name": "DIM_FACILITY",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [
+					{
+						"activity": "DIM_RESULTS",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "DIM_FACILITY_DF",
+						"type": "DataFlowReference",
+						"parameters": {
+							"DI_JOB_ID": "\"Dale_06\""
+						},
+						"datasetParameters": {
+							"srcChicagoStg": {
+								"schema": "SILVER",
+								"tableName": "CHICAGO_FOOD_INSPECTIONS_STG2"
+							},
+							"sink1": {
+								"schema": "GOLD",
+								"tableName": "DIM_FACILITY"
+							}
+						}
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			},
+			{
+				"name": "DIM_RISK",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [
+					{
+						"activity": "DIM_FACILITY",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "DIM_RISK_DF",
+						"type": "DataFlowReference",
+						"parameters": {
+							"DI_JOB_ID": "\"Dale_06\""
+						},
+						"datasetParameters": {
+							"srcChicagoStg": {
+								"schema": "SILVER",
+								"tableName": "CHICAGO_FOOD_INSPECTIONS_STG2"
+							},
+							"sink1": {
+								"schema": "GOLD",
+								"tableName": "DIM_RISK"
 							}
 						}
 					},
