@@ -170,6 +170,54 @@
 					},
 					"traceLevel": "Fine"
 				}
+			},
+			{
+				"name": "DIM_VIOLATION",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [
+					{
+						"activity": "DIM_RISK",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "DIM_VIOLATION_DF",
+						"type": "DataFlowReference",
+						"parameters": {
+							"DI_JOB_ID": "\"Dale_06\""
+						},
+						"datasetParameters": {
+							"sourceDallasSTG": {
+								"schema": "SILVER",
+								"tableName": "DALLAS_FOOD_INSPECTIONS_STG2"
+							},
+							"sourceChicagoSTG": {
+								"schema": "SILVER",
+								"tableName": "CHICAGO_FOOD_INSPECTIONS_STG2"
+							},
+							"sinkVIOLATION": {
+								"schema": "GOLD",
+								"tableName": "DIM_VIOLATION"
+							}
+						}
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
 			}
 		],
 		"annotations": []
