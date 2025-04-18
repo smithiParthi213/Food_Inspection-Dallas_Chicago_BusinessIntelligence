@@ -59,6 +59,23 @@
 				},
 				"userProperties": [],
 				"typeProperties": {
+					"dataflow": {
+						"referenceName": "DIM_RISK_DF",
+						"type": "DataFlowReference",
+						"parameters": {
+							"DI_JOB_ID": "\"Dale_06\""
+						},
+						"datasetParameters": {
+							"srcChicagoStg": {
+								"schema": "SILVER",
+								"tableName": "CHICAGO_FOOD_INSPECTIONS_STG2"
+							},
+							"sink1": {
+								"schema": "GOLD",
+								"tableName": "DIM_RISK"
+							}
+						}
+					},
 					"compute": {
 						"coreCount": 8,
 						"computeType": "General"
