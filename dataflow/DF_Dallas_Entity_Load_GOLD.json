@@ -17,6 +17,13 @@
 						"type": "DatasetReference"
 					},
 					"name": "MaxIDEntityDIM"
+				},
+				{
+					"dataset": {
+						"referenceName": "Snowflake",
+						"type": "DatasetReference"
+					},
+					"name": "sourceEntityDim"
 				}
 			],
 			"sinks": [
@@ -88,6 +95,9 @@
 				"     validateSchema: false,",
 				"     query: 'select NVL(MAX(ENTITY_SK),0) as Max_EntitySK from FOOD_INSPECTION_DB.GOLD.DIM_ENTITY',",
 				"     format: 'query') ~> MaxIDEntityDIM",
+				"source(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> sourceEntityDim",
 				"sourceDallasSTG2 select(mapColumn(",
 				"          DBA_NAME = RESTAURANT_NAME,",
 				"          STREET_ADDRESS,",
@@ -104,7 +114,8 @@
 				"          CITY = 'Dallas',",
 				"          ENTITY_TYPE = 'Restaurant',",
 				"          di_job_id = $job_id,",
-				"          di_load_dt = currentDate()) ~> derivedCols",
+				"          di_load_dt = currentDate(),",
+				"          row_action = ERROR_FUNCTION('')) ~> derivedCols",
 				"derivedCols select(mapColumn(",
 				"          ENTITY_SK,",
 				"          DBA_NAME,",
