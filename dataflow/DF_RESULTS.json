@@ -80,7 +80,7 @@
 				"     skipDuplicateMapOutputs: true) ~> select1",
 				"sourceSILVER aggregate(groupBy(INSPECTION_TYPE,",
 				"          RESULTS),",
-				"     INSPECTION_ID = count(INSPECTION_ID)) ~> aggregateiNSPECTIONID",
+				"     INSPECTION_ID = count(RESULTS)) ~> aggregateiNSPECTIONID",
 				"select1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     deletable:false,",
