@@ -43,9 +43,21 @@
 				},
 				{
 					"name": "surrogateKey1"
+				},
+				{
+					"name": "derivedColumn2"
+				},
+				{
+					"name": "aggregate1"
+				},
+				{
+					"name": "filter1"
 				}
 			],
 			"scriptLines": [
+				"parameters{",
+				"     DI_JOB_ID as string (\"Dale_06\")",
+				"}",
 				"source(output(",
 				"          SK_ID as decimal(38,0),",
 				"          INSPECTION_ID as decimal(38,0),",
@@ -117,10 +129,20 @@
 				"RequiredColumns1, derivedColumn1 union(byName: true)~> unionDATA",
 				"RequiredColumns2 derive(VIOLATION_NUMBER = toInteger(VIOLATION_NUMBER),",
 				"          VIOLATION_DETAILS = 'N/A') ~> derivedColumn1",
-				"unionDATA keyGenerate(output(VIOLATION_SK as long),",
+				"filter1 keyGenerate(output(VIOLATION_SK as long),",
 				"     startAt: 1L,",
 				"     stepValue: 1L) ~> surrogateKey1",
-				"surrogateKey1 sink(allowSchemaDrift: true,",
+				"surrogateKey1 derive(DI_JOB_ID = $DI_JOB_ID,",
+				"          DI_LOAD_DT = currentDate()) ~> derivedColumn2",
+				"unionDATA aggregate(groupBy(VIOLATION_NUMBER,",
+				"          VIOLATION_DESCRIPTION,",
+				"          VIOLATION_DETAILS),",
+				"     COUNT_ROW = count(1)) ~> aggregate1",
+				"aggregate1 filter(!isNull(VIOLATION_NUMBER) &&",
+				"!isNull(VIOLATION_DESCRIPTION) && VIOLATION_DESCRIPTION!= 'N/A' &&",
+				"!isNull(VIOLATION_DETAILS) && VIOLATION_DETAILS!= 'N/A'",
+				") ~> filter1",
+				"derivedColumn2 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     deletable:false,",
 				"     insertable:true,",
@@ -135,7 +157,9 @@
 				"          VIOLATION_CODE = VIOLATION_NUMBER,",
 				"          VIOLATION_DESCRIPTION,",
 				"          VIOLATION_DETAIL = VIOLATION_DETAILS,",
-				"          VIOLATION_SK",
+				"          VIOLATION_SK,",
+				"          DI_JOB_ID,",
+				"          DI_LOAD_DT",
 				"     )) ~> sinkVIOLATION"
 			]
 		}
