@@ -25,10 +25,6 @@
 							"value": "@pipeline().parameters.sfUser",
 							"type": "Expression"
 						},
-						"sfPassword": {
-							"value": "@pipeline().parameters.sfPassword",
-							"type": "Expression"
-						},
 						"sfDatabase": {
 							"value": "@pipeline().parameters.sfDatabase",
 							"type": "Expression"
@@ -73,10 +69,6 @@
 			"sfUser": {
 				"type": "string",
 				"defaultValue": "ADF_USER"
-			},
-			"sfPassword": {
-				"type": "string",
-				"defaultValue": "adfuser_dadabiGroup@005"
 			},
 			"sfDatabase": {
 				"type": "string",
