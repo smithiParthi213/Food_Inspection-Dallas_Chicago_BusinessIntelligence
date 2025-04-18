@@ -10,28 +10,12 @@
 						"type": "DatasetReference"
 					},
 					"name": "sourceChicago"
-				},
-				{
-					"dataset": {
-						"referenceName": "Snowflake",
-						"type": "DatasetReference"
-					},
-					"name": "sourceDallas"
 				}
 			],
 			"sinks": [],
 			"transformations": [
 				{
-					"name": "union1"
-				},
-				{
-					"name": "derivedColumn2"
-				},
-				{
 					"name": "select1"
-				},
-				{
-					"name": "select2"
 				}
 			],
 			"scriptLines": [
@@ -64,38 +48,6 @@
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     format: 'table') ~> sourceChicago",
-				"source(output(",
-				"          SK_ID as decimal(38,0),",
-				"          INSPECTION_ID as decimal(38,0),",
-				"          RESTAURANT_NAME as string,",
-				"          INSPECTION_TYPE as string,",
-				"          INSPECTION_DATE as date,",
-				"          INSPECTION_SCORE as decimal(38,0),",
-				"          STREET_NUMBER as decimal(38,0),",
-				"          STREET_NAME as string,",
-				"          STREET_DIRECTION as string,",
-				"          STREET_TYPE as string,",
-				"          STREET_UNIT as string,",
-				"          STREET_ADDRESS as string,",
-				"          ZIP_CODE as decimal(38,0),",
-				"          VIOLATION_NUMBER as decimal(38,0),",
-				"          VIOLATION_DESCRIPTION as string,",
-				"          VIOLATION_POINTS as decimal(38,0),",
-				"          VIOLATION_DETAILS as string,",
-				"          VIOLATION_MEMO as string,",
-				"          INSPECTION_MONTH as string,",
-				"          INSPECTION_YEAR as string,",
-				"          LATITUDE as double,",
-				"          LONGITUDE as double,",
-				"          DI_JOB_ID as string,",
-				"          DI_LOAD_DT as date",
-				"     ),",
-				"     allowSchemaDrift: true,",
-				"     validateSchema: false,",
-				"     format: 'table') ~> sourceDallas",
-				"select1, derivedColumn2 union(byName: true)~> union1",
-				"select2 derive(CITY = 'DALLAS',",
-				"          STATE = 'TEXAS') ~> derivedColumn2",
 				"sourceChicago select(mapColumn(",
 				"          DBA_NAME,",
 				"          AKA_NAME,",
@@ -108,16 +60,7 @@
 				"          LONGITUDE",
 				"     ),",
 				"     skipDuplicateMapInputs: true,",
-				"     skipDuplicateMapOutputs: true) ~> select1",
-				"sourceDallas select(mapColumn(",
-				"          RESTAURANT_NAME,",
-				"          STREET_ADDRESS,",
-				"          ZIP_CODE,",
-				"          LATITUDE,",
-				"          LONGITUDE",
-				"     ),",
-				"     skipDuplicateMapInputs: true,",
-				"     skipDuplicateMapOutputs: true) ~> select2"
+				"     skipDuplicateMapOutputs: true) ~> select1"
 			]
 		}
 	}
