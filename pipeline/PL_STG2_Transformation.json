@@ -1,11 +1,63 @@
 {
-	"name": "PL_Dallas_STG2_Transformation",
+	"name": "PL_STG2_Transformation",
 	"properties": {
 		"activities": [
 			{
-				"name": "Dallas_STG2_TRANS",
+				"name": "Chicago_STG2_TRANS",
 				"type": "ExecuteDataFlow",
 				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "DF_Clean_Chicago",
+						"type": "DataFlowReference",
+						"parameters": {
+							"DI_JOB_ID": "\"Dale_06\""
+						},
+						"datasetParameters": {
+							"SourceSILVER": {
+								"schema": "SILVER",
+								"tableName": "CHICAGO_FOOD_INSPECTIONS_STG1"
+							},
+							"MaxIDChicagoStg2": {
+								"schema": "SILVER",
+								"tableName": "CHICAGO_FOOD_INSPECTIONS_STG2"
+							},
+							"sinkSNF": {
+								"schema": "SILVER",
+								"tableName": "CHICAGO_FOOD_INSPECTIONS_STG2"
+							},
+							"sinkADLS": {
+								"container": "silver",
+								"directory": "stg_2/chicago"
+							}
+						}
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			},
+			{
+				"name": "Dallas_STG2_TRANS_copy1",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [
+					{
+						"activity": "Chicago_STG2_TRANS",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "0.12:00:00",
 					"retry": 0,
