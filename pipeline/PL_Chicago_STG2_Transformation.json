@@ -3,7 +3,7 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "Clean_Chicago_STG2",
+				"name": "Chicago_STG2_TRANS",
 				"type": "ExecuteDataFlow",
 				"dependsOn": [],
 				"policy": {
@@ -26,13 +26,93 @@
 								"schema": "SILVER",
 								"tableName": "CHICAGO_FOOD_INSPECTIONS_STG1"
 							},
-							"sinkSF": {
+							"MaxIDChicagoStg2": {
+								"schema": "SILVER",
+								"tableName": "CHICAGO_FOOD_INSPECTIONS_STG2"
+							},
+							"sinkSNF": {
 								"schema": "SILVER",
 								"tableName": "CHICAGO_FOOD_INSPECTIONS_STG2"
 							},
 							"sinkADLS": {
 								"container": "silver",
 								"directory": "stg_2/chicago"
+							}
+						}
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			},
+			{
+				"name": "Dallas_STG2_TRANS_copy1",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [
+					{
+						"activity": "Chicago_STG2_TRANS",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "DF_Dallas_STG2",
+						"type": "DataFlowReference",
+						"parameters": {
+							"job_id": "\"SP_001\""
+						},
+						"datasetParameters": {
+							"sourceDallasSTG1": {
+								"schema": {
+									"value": "SILVER",
+									"type": "Expression"
+								},
+								"tableName": {
+									"value": "DALLAS_FOOD_INSPECTIONS_STG1",
+									"type": "Expression"
+								}
+							},
+							"DallasSTG2MaxID": {
+								"schema": {
+									"value": "SILVER",
+									"type": "Expression"
+								},
+								"tableName": {
+									"value": "DALLAS_FOOD_INSPECTIONS_STG2",
+									"type": "Expression"
+								}
+							},
+							"sinkSNF": {
+								"schema": {
+									"value": "SILVER",
+									"type": "Expression"
+								},
+								"tableName": {
+									"value": "DALLAS_FOOD_INSPECTIONS_STG2",
+									"type": "Expression"
+								}
+							},
+							"sinkADLS": {
+								"container": {
+									"value": "silver",
+									"type": "Expression"
+								},
+								"directory": {
+									"value": "stg_2/dallas",
+									"type": "Expression"
+								}
 							}
 						}
 					},

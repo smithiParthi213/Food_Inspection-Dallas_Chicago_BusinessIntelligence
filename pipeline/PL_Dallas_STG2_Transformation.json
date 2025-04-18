@@ -18,6 +18,9 @@
 					"dataflow": {
 						"referenceName": "DF_Dallas_STG2",
 						"type": "DataFlowReference",
+						"parameters": {
+							"job_id": "\"SP_001\""
+						},
 						"datasetParameters": {
 							"sourceDallasSTG1": {
 								"schema": {
