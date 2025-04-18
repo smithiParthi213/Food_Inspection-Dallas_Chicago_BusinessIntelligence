@@ -1,5 +1,5 @@
 {
-	"name": "DIM_ENTITY_CHICAGO_DF",
+	"name": "DIM_ENTITY_CHICAGO",
 	"properties": {
 		"type": "MappingDataFlow",
 		"typeProperties": {
@@ -85,7 +85,7 @@
 				"selectColumnsChicago derive(DI_LOAD_DT = currentTimestamp(),",
 				"          DI_JOB_ID = $JOB_ID) ~> derivedColumn",
 				"sourceChicago select(mapColumn(",
-				"          DBA_NAME,",
+				"          DBA_NAME = COUNT_ROW,",
 				"          AKA_NAME,",
 				"          LICENSE_NUMBER,",
 				"          ADDRESS,",
@@ -105,8 +105,7 @@
 				"     matchType:'exact',",
 				"     ignoreSpaces: false,",
 				"     broadcast: 'auto')~> join",
-				"join aggregate(groupBy(DBA_NAME),",
-				"     COUNT_ROW = count(DBA_NAME)) ~> aggregate1",
+				"join aggregate(groupBy(AKA_NAME)) ~> aggregate1",
 				"aggregate1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     deletable:false,",
