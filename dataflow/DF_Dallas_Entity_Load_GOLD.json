@@ -53,6 +53,9 @@
 				},
 				{
 					"name": "joinSK"
+				},
+				{
+					"name": "rowAction"
 				}
 			],
 			"scriptLines": [
@@ -107,15 +110,14 @@
 				"     ),",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true) ~> selectReqCols",
-				"joinSK derive(ENTITY_SK = my_sk + MAX_ENTITYSK,",
+				"rowAction derive(ENTITY_SK = my_sk + MAX_ENTITYSK,",
 				"          AKA_NAME = 'N/A - Not Applicable for Dallas',",
 				"          LICENSE_NUMBER = 'N/A - Not Applicable for Dallas',",
 				"          STATE = 'Texas',",
 				"          CITY = 'Dallas',",
 				"          ENTITY_TYPE = 'Restaurant',",
 				"          di_job_id = $job_id,",
-				"          di_load_dt = currentDate(),",
-				"          row_action = ERROR_FUNCTION('')) ~> derivedCols",
+				"          di_load_dt = currentDate()) ~> derivedCols",
 				"derivedCols select(mapColumn(",
 				"          ENTITY_SK,",
 				"          DBA_NAME,",
@@ -147,6 +149,7 @@
 				"     matchType:'exact',",
 				"     ignoreSpaces: false,",
 				"     broadcast: 'auto')~> joinSK",
+				"joinSK derive(row_action = iif(!isNull(NAMEBASICS_DK) && IS_ACTIVE == 1 && sourceNameBasicsSTG@DEATHYEAR != sourceNBdim@DEATHYEAR, 'update', 'insert')) ~> rowAction",
 				"selectSINKCols sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     deletable:false,",
