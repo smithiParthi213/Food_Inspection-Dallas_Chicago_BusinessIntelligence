@@ -10,6 +10,13 @@
 						"type": "DatasetReference"
 					},
 					"name": "sourceChicago"
+				},
+				{
+					"dataset": {
+						"referenceName": "Snowflake",
+						"type": "DatasetReference"
+					},
+					"name": "MaxID"
 				}
 			],
 			"sinks": [
@@ -23,16 +30,19 @@
 			],
 			"transformations": [
 				{
-					"name": "derivedColumn1"
+					"name": "derivedColumn"
 				},
 				{
-					"name": "select1"
+					"name": "selectColumnsChicago"
 				},
 				{
-					"name": "surrogateKey1"
+					"name": "surrogateKey"
 				},
 				{
-					"name": "aggregate1"
+					"name": "aggregate"
+				},
+				{
+					"name": "join"
 				}
 			],
 			"scriptLines": [
@@ -65,8 +75,12 @@
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     format: 'table') ~> sourceChicago",
-				"select1 derive(DI_LOAD_DT = currentTimestamp(),",
-				"          DI_JOB_ID = $JOB_ID) ~> derivedColumn1",
+				"source(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     query: 'select NVL(MAX(ENTITY_SK),0) as Max_SK_ID from FOOD_INSPECTION_DB.SILVER.CHICAGO_FOOD_INSPECTIONS_STG2\\n ',",
+				"     format: 'query') ~> MaxID",
+				"selectColumnsChicago derive(DI_LOAD_DT = currentTimestamp(),",
+				"          DI_JOB_ID = $JOB_ID) ~> derivedColumn",
 				"sourceChicago select(mapColumn(",
 				"          DBA_NAME,",
 				"          AKA_NAME,",
@@ -79,13 +93,18 @@
 				"          LONGITUDE",
 				"     ),",
 				"     skipDuplicateMapInputs: true,",
-				"     skipDuplicateMapOutputs: true) ~> select1",
-				"derivedColumn1 keyGenerate(output(ENTITY_SK as long),",
+				"     skipDuplicateMapOutputs: true) ~> selectColumnsChicago",
+				"derivedColumn keyGenerate(output(ENTITY_SK as long),",
 				"     startAt: 1L,",
-				"     stepValue: 1L) ~> surrogateKey1",
-				"surrogateKey1 aggregate(groupBy(DBA_NAME),",
-				"     COUNT_ROW = count(DBA_NAME)) ~> aggregate1",
-				"aggregate1 sink(allowSchemaDrift: true,",
+				"     stepValue: 1L) ~> surrogateKey",
+				"join aggregate(groupBy(DBA_NAME),",
+				"     COUNT_ROW = count(DBA_NAME)) ~> aggregate",
+				"surrogateKey, MaxID join(1==1,",
+				"     joinType:'cross',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join",
+				"aggregate sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     deletable:false,",
 				"     insertable:true,",
