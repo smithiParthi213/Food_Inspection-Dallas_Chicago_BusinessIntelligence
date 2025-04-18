@@ -22,6 +22,9 @@
 				},
 				{
 					"name": "surrogateKey1"
+				},
+				{
+					"name": "aggregate1"
 				}
 			],
 			"scriptLines": [
@@ -69,9 +72,10 @@
 				"     ),",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true) ~> select1",
-				"derivedColumn1 keyGenerate(output({undefined} as long),",
+				"derivedColumn1 keyGenerate(output(ENTITY_SK as long),",
 				"     startAt: 1L,",
-				"     stepValue: 1L) ~> surrogateKey1"
+				"     stepValue: 1L) ~> surrogateKey1",
+				"surrogateKey1 aggregate(groupBy(DBA_NAME)) ~> aggregate1"
 			]
 		}
 	}
