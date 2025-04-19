@@ -5,6 +5,8 @@
 			{
 				"name": "Chicago_STG2_TRANS",
 				"type": "ExecuteDataFlow",
+				"state": "Inactive",
+				"onInactiveMarkAs": "Succeeded",
 				"dependsOn": [],
 				"policy": {
 					"timeout": "0.12:00:00",
@@ -81,16 +83,6 @@
 								},
 								"tableName": {
 									"value": "DALLAS_FOOD_INSPECTIONS_STG1",
-									"type": "Expression"
-								}
-							},
-							"DallasSTG2MaxID": {
-								"schema": {
-									"value": "SILVER",
-									"type": "Expression"
-								},
-								"tableName": {
-									"value": "DALLAS_FOOD_INSPECTIONS_STG2",
 									"type": "Expression"
 								}
 							},

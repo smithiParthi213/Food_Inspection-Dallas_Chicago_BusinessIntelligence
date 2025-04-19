@@ -1,0 +1,198 @@
+{
+	"name": "DF_Vio_Bridge_LOAD_GOLD_copy1",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "Snowflake",
+						"type": "DatasetReference"
+					},
+					"name": "sourceChicagoSTG2"
+				},
+				{
+					"dataset": {
+						"referenceName": "Snowflake",
+						"type": "DatasetReference"
+					},
+					"name": "sourceDallasSTG2"
+				},
+				{
+					"dataset": {
+						"referenceName": "Snowflake",
+						"type": "DatasetReference"
+					},
+					"name": "sourceViolationDim"
+				},
+				{
+					"dataset": {
+						"referenceName": "Snowflake",
+						"type": "DatasetReference"
+					},
+					"name": "sourceFact"
+				}
+			],
+			"sinks": [],
+			"transformations": [
+				{
+					"name": "unionSTG2tbls"
+				},
+				{
+					"name": "selectChicagoCols"
+				},
+				{
+					"name": "selectDallasCols"
+				},
+				{
+					"name": "derivedChicagoCols"
+				},
+				{
+					"name": "joinVioDIm"
+				},
+				{
+					"name": "aggregate1"
+				},
+				{
+					"name": "select1"
+				},
+				{
+					"name": "joinFact"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          SK_ID as string,",
+				"          INSPECTION_ID as integer,",
+				"          DBA_NAME as string,",
+				"          AKA_NAME as string,",
+				"          LICENSE_NUMBER as double,",
+				"          FACILITY_TYPE as string,",
+				"          RISK as string,",
+				"          ADDRESS as string,",
+				"          CITY as string,",
+				"          STATE as string,",
+				"          ZIP as integer,",
+				"          INSPECTION_DATE as date,",
+				"          INSPECTION_TYPE as string,",
+				"          RESULTS as string,",
+				"          VIOLATION_NUMBER as integer,",
+				"          VIOLATION_DESCRIPTION as string,",
+				"          VIOLATION_COMMENTS as string,",
+				"          LATITUDE as double,",
+				"          LONGITUDE as double,",
+				"          DI_JOB_ID as string,",
+				"          DI_LOAD_DT as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> sourceChicagoSTG2",
+				"source(output(",
+				"          SK_ID as string,",
+				"          INSPECTION_ID as integer,",
+				"          RESTAURANT_NAME as string,",
+				"          INSPECTION_TYPE as string,",
+				"          INSPECTION_DATE as date,",
+				"          INSPECTION_SCORE as integer,",
+				"          STREET_NUMBER as integer,",
+				"          STREET_NAME as string,",
+				"          STREET_DIRECTION as string,",
+				"          STREET_TYPE as string,",
+				"          STREET_UNIT as string,",
+				"          STREET_ADDRESS as string,",
+				"          ZIP_CODE as integer,",
+				"          VIOLATION_NUMBER as decimal(38,0),",
+				"          VIOLATION_DESCRIPTION as string,",
+				"          VIOLATION_POINTS as integer,",
+				"          VIOLATION_DETAILS as string,",
+				"          VIOLATION_MEMO as string,",
+				"          INSPECTION_MONTH as string,",
+				"          INSPECTION_YEAR as string,",
+				"          LATITUDE as double,",
+				"          LONGITUDE as double,",
+				"          DI_JOB_ID as string,",
+				"          DI_LOAD_DT as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> sourceDallasSTG2",
+				"source(output(",
+				"          VIOLATION_SK as decimal(30,0),",
+				"          VIOLATION_CODE as decimal(30,0),",
+				"          VIOLATION_DESCRIPTION as string,",
+				"          VIOLATION_DETAIL as string,",
+				"          DI_JOB_ID as string,",
+				"          DI_LOAD_DT as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> sourceViolationDim",
+				"source(output(",
+				"          INSPECTION_SK as decimal(30,0),",
+				"          DATE_SK as decimal(38,0),",
+				"          INSPECTION_TYPE_SK as decimal(30,0),",
+				"          RESULT_SK as decimal(30,0),",
+				"          RISK_SK as decimal(30,0),",
+				"          FACILITY_SK as decimal(30,0),",
+				"          ENTITY_SK as decimal(30,0),",
+				"          INSPECTION_ID as decimal(10,0),",
+				"          INSPECTION_SCORE as decimal(30,0),",
+				"          DI_JOB_ID as string,",
+				"          DI_LOAD_DT as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> sourceFact",
+				"derivedChicagoCols, selectDallasCols union(byName: true)~> unionSTG2tbls",
+				"sourceChicagoSTG2 select(mapColumn(",
+				"          VIOLATION_NUMBER,",
+				"          VIOLATION_DESCRIPTION,",
+				"          VIOLATION_COMMENTS,",
+				"          INSPECTION_ID",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> selectChicagoCols",
+				"sourceDallasSTG2 select(mapColumn(",
+				"          VIOLATION_NUMBER,",
+				"          VIOLATION_DESCRIPTION,",
+				"          VIOLATION_POINTS,",
+				"          VIOLATION_DETAILS,",
+				"          VIOLATION_COMMENTS = VIOLATION_MEMO,",
+				"          INSPECTION_ID",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> selectDallasCols",
+				"selectChicagoCols derive(VIOLATION_POINTS = -1,",
+				"          VIOLATION_DETAILS = 'N/A - Not Applicable'\r",
+				") ~> derivedChicagoCols",
+				"aggregate1, sourceViolationDim join(VIOLATION_NUMBER == VIOLATION_CODE",
+				"     && aggregate1@VIOLATION_DESCRIPTION == sourceViolationDim@VIOLATION_DESCRIPTION",
+				"     && VIOLATION_DETAILS == VIOLATION_DETAIL,",
+				"     joinType:'left',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> joinVioDIm",
+				"unionSTG2tbls aggregate(groupBy(VIOLATION_NUMBER,",
+				"          VIOLATION_DESCRIPTION,",
+				"          VIOLATION_COMMENTS,",
+				"          VIOLATION_DETAILS,",
+				"          VIOLATION_POINTS,",
+				"          INSPECTION_ID),",
+				"     row_count = count()) ~> aggregate1",
+				"joinVioDIm select(mapColumn(",
+				"          VIOLATION_COMMENTS,",
+				"          VIOLATION_POINTS,",
+				"          VIOLATION_SK,",
+				"          INSPECTION_ID",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select1",
+				"select1, sourceFact join(select1@INSPECTION_ID == sourceFact@INSPECTION_ID,",
+				"     joinType:'left',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> joinFact"
+			]
+		}
+	}
+}
