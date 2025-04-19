@@ -3,10 +3,8 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "DIM_INSPECTION",
+				"name": "DIM_INSPECTION_TYPE",
 				"type": "ExecuteDataFlow",
-				"state": "Inactive",
-				"onInactiveMarkAs": "Succeeded",
 				"dependsOn": [],
 				"policy": {
 					"timeout": "0.12:00:00",
@@ -20,15 +18,12 @@
 					"dataflow": {
 						"referenceName": "DIM_INSPECTION_DF",
 						"type": "DataFlowReference",
-						"parameters": {
-							"JOB_ID": "\"AN11\""
-						},
 						"datasetParameters": {
 							"sourceSILVER": {
 								"schema": "SILVER",
 								"tableName": "CHICAGO_FOOD_INSPECTIONS_STG2"
 							},
-							"sink1": {
+							"sinkSnfGold": {
 								"schema": "GOLD",
 								"tableName": "DIM_INSPECTIONTYPE"
 							}
@@ -48,7 +43,7 @@
 				"onInactiveMarkAs": "Succeeded",
 				"dependsOn": [
 					{
-						"activity": "DIM_INSPECTION",
+						"activity": "DIM_INSPECTION_TYPE",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -90,8 +85,6 @@
 			{
 				"name": "DIM_FACILITY",
 				"type": "ExecuteDataFlow",
-				"state": "Inactive",
-				"onInactiveMarkAs": "Succeeded",
 				"dependsOn": [
 					{
 						"activity": "DIM_RESULTS",
@@ -120,7 +113,11 @@
 								"schema": "SILVER",
 								"tableName": "CHICAGO_FOOD_INSPECTIONS_STG2"
 							},
-							"sink1": {
+							"MAXID": {
+								"schema": "GOLD",
+								"tableName": "DIM_FACILITY"
+							},
+							"sinkDimFacility": {
 								"schema": "GOLD",
 								"tableName": "DIM_FACILITY"
 							}
@@ -213,6 +210,10 @@
 							"sourceChicagoSTG": {
 								"schema": "SILVER",
 								"tableName": "CHICAGO_FOOD_INSPECTIONS_STG2"
+							},
+							"MaxIDViolationGold": {
+								"schema": "GOLD",
+								"tableName": "DIM_VIOLATION"
 							},
 							"sinkVIOLATION": {
 								"schema": "GOLD",
