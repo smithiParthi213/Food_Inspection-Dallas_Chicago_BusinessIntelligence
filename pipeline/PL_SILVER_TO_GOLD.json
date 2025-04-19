@@ -119,10 +119,6 @@
 							"srcChicagoStg": {
 								"schema": "SILVER",
 								"tableName": "CHICAGO_FOOD_INSPECTIONS_STG2"
-							},
-							"sink1": {
-								"schema": "GOLD",
-								"tableName": "DIM_FACILITY"
 							}
 						}
 					},
