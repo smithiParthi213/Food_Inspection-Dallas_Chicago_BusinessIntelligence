@@ -1,0 +1,81 @@
+{
+	"name": "PL_FACT_LOAD_GOLD",
+	"properties": {
+		"activities": [
+			{
+				"name": "FACT_LOAD",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "Fact_LOAD_DF",
+						"type": "DataFlowReference",
+						"parameters": {
+							"DI_JOB_ID": "\"Dale_06\""
+						},
+						"datasetParameters": {
+							"sourceChicagoSTG": {
+								"schema": "SILVER",
+								"tableName": "CHICAGO_FOOD_INSPECTIONS_STG2"
+							},
+							"sourceDallasSTG": {
+								"schema": "SILVER",
+								"tableName": "DALLAS_FOOD_INSPECTIONS_STG2"
+							},
+							"dimInspectionType": {
+								"schema": "GOLD",
+								"tableName": "DIM_INSPECTIONTYPE"
+							},
+							"dimRisk": {
+								"schema": "GOLD",
+								"tableName": "DIM_RISK"
+							},
+							"dimResult": {
+								"schema": "GOLD",
+								"tableName": "DIM_RESULT"
+							},
+							"dimFacility": {
+								"schema": "GOLD",
+								"tableName": "DIM_FACILITY"
+							},
+							"dimEntity": {
+								"schema": "GOLD",
+								"tableName": "DIM_ENTITY"
+							},
+							"dimDate": {
+								"schema": "GOLD",
+								"tableName": "DIM_DATE"
+							},
+							"sourceChicagoStg2": {
+								"schema": "SILVER",
+								"tableName": "CHICAGO_FOOD_INSPECTIONS_STG2"
+							},
+							"MaxIDFact": {
+								"schema": "GOLD",
+								"tableName": "FACT_FOOD_INSPECTION"
+							},
+							"sinkSNF": {
+								"schema": "GOLD",
+								"tableName": "FACT_FOOD_INSPECTION"
+							}
+						}
+					},
+					"compute": {
+						"coreCount": 16,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			}
+		],
+		"annotations": []
+	}
+}
