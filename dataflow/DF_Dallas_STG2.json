@@ -49,9 +49,6 @@
 				},
 				{
 					"name": "select1"
-				},
-				{
-					"name": "filter1"
 				}
 			],
 			"scriptLines": [
@@ -227,7 +224,7 @@
 				"          INSPECTION_ID = abs(crc32(concat(  toString(RESTAURANT_NAME),  toString(INSPECTION_DATE),  toString(ZIP_CODE)))),",
 				"          job_id = $job_id,",
 				"          load_dt = currentDate()) ~> derivedColumn3",
-				"filter1 select(mapColumn(",
+				"derivedColumn3 select(mapColumn(",
 				"          SK_ID,",
 				"          INSPECTION_ID,",
 				"          RESTAURANT_NAME,",
@@ -255,7 +252,6 @@
 				"     ),",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true) ~> select1",
-				"derivedColumn3 filter(INSPECTION_ID < 0 ) ~> filter1",
 				"select1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     deletable:false,",
