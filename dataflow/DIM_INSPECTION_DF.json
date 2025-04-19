@@ -66,7 +66,6 @@
 				"     validateSchema: false,",
 				"     format: 'table') ~> sourceSILVER",
 				"surrogateKey derive(INSPECTION_TYPE_SK = my_sk,",
-				"          INSPECTION_TYPE = upper(INSPECTION_TYPE),",
 				"          DI_JOB_ID = $JOB_ID,",
 				"          DI_LOAD_DT = currentTimestamp()) ~> derivedCols",
 				"aggregate keyGenerate(output(my_sk as long),",
