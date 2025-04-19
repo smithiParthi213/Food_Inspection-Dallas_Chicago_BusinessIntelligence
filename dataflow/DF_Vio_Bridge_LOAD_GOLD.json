@@ -12,7 +12,18 @@
 					"name": "sourceChicagoSTG2"
 				},
 				{
-					"name": "source1"
+					"dataset": {
+						"referenceName": "Snowflake",
+						"type": "DatasetReference"
+					},
+					"name": "sourceDallasSTG2"
+				},
+				{
+					"dataset": {
+						"referenceName": "Snowflake",
+						"type": "DatasetReference"
+					},
+					"name": "sourceViolationDim"
 				}
 			],
 			"sinks": [],
@@ -45,7 +56,11 @@
 				"     validateSchema: false,",
 				"     format: 'table') ~> sourceChicagoSTG2",
 				"source(allowSchemaDrift: true,",
-				"     validateSchema: false) ~> source1"
+				"     validateSchema: false,",
+				"     format: 'table') ~> sourceDallasSTG2",
+				"source(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> sourceViolationDim"
 			]
 		}
 	}
