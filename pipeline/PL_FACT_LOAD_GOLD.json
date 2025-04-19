@@ -54,15 +54,7 @@
 								"schema": "GOLD",
 								"tableName": "DIM_DATE"
 							},
-							"sourceChicagoStg2": {
-								"schema": "SILVER",
-								"tableName": "CHICAGO_FOOD_INSPECTIONS_STG2"
-							},
 							"MaxIDFact": {
-								"schema": "GOLD",
-								"tableName": "FACT_FOOD_INSPECTION"
-							},
-							"sinkSNF": {
 								"schema": "GOLD",
 								"tableName": "FACT_FOOD_INSPECTION"
 							}
