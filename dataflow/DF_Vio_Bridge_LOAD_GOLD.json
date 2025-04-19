@@ -46,7 +46,7 @@
 						"referenceName": "Snowflake",
 						"type": "DatasetReference"
 					},
-					"name": "sink1"
+					"name": "sinkSnfBridge"
 				}
 			],
 			"transformations": [
@@ -288,7 +288,7 @@
 				"          VIOLATION_POINTS,",
 				"          DI_JOB_ID,",
 				"          DI_LOAD_DT",
-				"     )) ~> sink1"
+				"     )) ~> sinkSnfBridge"
 			]
 		}
 	}

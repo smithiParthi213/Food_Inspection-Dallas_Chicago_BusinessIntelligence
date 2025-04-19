@@ -17,7 +17,48 @@
 				"typeProperties": {
 					"dataflow": {
 						"referenceName": "DF_Vio_Bridge_LOAD_GOLD",
-						"type": "DataFlowReference"
+						"type": "DataFlowReference",
+						"parameters": {
+							"job_id": "\"SP_001\""
+						},
+						"datasetParameters": {
+							"sourceChicagoSTG2": {
+								"schema": {
+									"value": "SILVER",
+									"type": "Expression"
+								},
+								"tableName": {
+									"value": "CHICAGO_FOOD_INSPECTIONS_STG2",
+									"type": "Expression"
+								}
+							},
+							"sourceDallasSTG2": {
+								"schema": {
+									"value": "SILVER",
+									"type": "Expression"
+								},
+								"tableName": {
+									"value": "DALLAS_FOOD_INSPECTIONS_STG2",
+									"type": "Expression"
+								}
+							},
+							"sourceViolationDim": {
+								"schema": "GOLD",
+								"tableName": "DIM_VIOLATION"
+							},
+							"sourceFact": {
+								"schema": "GOLD",
+								"tableName": "FACT_FOOD_INSPECTION"
+							},
+							"MaxIDBridgeVio": {
+								"schema": "GOLD",
+								"tableName": "BRIDGE_INSPECTIONVIOLATION"
+							},
+							"sinkSnfBridge": {
+								"schema": "GOLD",
+								"tableName": "BRIDGE_INSPECTIONVIOLATION"
+							}
+						}
 					},
 					"compute": {
 						"coreCount": 8,
