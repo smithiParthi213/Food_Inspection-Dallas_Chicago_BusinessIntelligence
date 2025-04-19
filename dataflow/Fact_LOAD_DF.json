@@ -52,6 +52,13 @@
 						"type": "DatasetReference"
 					},
 					"name": "dimEntity"
+				},
+				{
+					"dataset": {
+						"referenceName": "Snowflake",
+						"type": "DatasetReference"
+					},
+					"name": "dimDate"
 				}
 			],
 			"sinks": [],
@@ -70,6 +77,12 @@
 				},
 				{
 					"name": "select1"
+				},
+				{
+					"name": "join1"
+				},
+				{
+					"name": "filter1"
 				}
 			],
 			"scriptLines": [
@@ -186,6 +199,24 @@
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     format: 'table') ~> dimEntity",
+				"source(output(",
+				"          DATE_SK as decimal(38,0),",
+				"          INSPECTION_DATE as date,",
+				"          DAY_OF_WEEK_NUM as decimal(2,0),",
+				"          DAY_OF_WEEK_NAME as string,",
+				"          DAY_OF_WEEK_ABBR as string,",
+				"          WEEK_OF_YEAR as decimal(2,0),",
+				"          MONTH as string,",
+				"          MONTH_ABBR as string,",
+				"          MONTH_NUM as decimal(2,0),",
+				"          DAY_OF_MONTH as decimal(2,0),",
+				"          QTR_NUM as decimal(2,0),",
+				"          YEAR as decimal(4,0),",
+				"          IS_WEEKEND as boolean",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> dimDate",
 				"sourceChicagoSTG, dimInspectionType join(sourceChicagoSTG@INSPECTION_TYPE == dimInspectionType@INSPECTION_TYPE,",
 				"     joinType:'left',",
 				"     matchType:'exact',",
@@ -216,14 +247,20 @@
 				"          CITY,",
 				"          STATE,",
 				"          ZIP,",
-				"          INSPECTION_DATE,",
+				"          INSPECTION_DT = INSPECTION_DATE,",
 				"          INSPECTION_TYPE_SK,",
 				"          RISK_SK,",
 				"          RESULT_SK,",
 				"          FACILITY_SK",
 				"     ),",
 				"     skipDuplicateMapInputs: true,",
-				"     skipDuplicateMapOutputs: true) ~> select1"
+				"     skipDuplicateMapOutputs: true) ~> select1",
+				"select1, dimDate join(INSPECTION_DT == INSPECTION_DATE,",
+				"     joinType:'left',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join1",
+				"dimDate filter(year(INSPECTION_DATE) ==2023) ~> filter1"
 			]
 		}
 	}
