@@ -132,6 +132,9 @@
 				},
 				{
 					"name": "surrogateKey1"
+				},
+				{
+					"name": "filter2"
 				}
 			],
 			"scriptLines": [
@@ -409,10 +412,16 @@
 				"     broadcast: 'auto')~> joinSK",
 				"joinSK derive(INSPECTION_SK = my_SK + MAX_INSPECTION_SK ,",
 				"          DI_JOB_ID = $DI_JOB_ID,",
-				"          DI_LOAD_DT = currentDate()) ~> AdditionalColumns",
+				"          DI_LOAD_DT = currentDate(),",
+				"          RISK_SK = iif(isNull(RISK_SK), -1, toInteger(RISK_SK)),",
+				"          RESULT_SK = iif(isNull(RESULT_SK), -1, toInteger(RESULT_SK)),",
+				"          FACILITY_SK = iif(isNull(FACILITY_SK), -1, toInteger(FACILITY_SK)),",
+				"          INSPECTION_TYPE_SK = iif(isNull(INSPECTION_TYPE_SK), -1, toInteger(INSPECTION_TYPE_SK)),",
+				"          ENTITY_SK = iif(isNull(ENTITY_SK), -1, toInteger(ENTITY_SK))) ~> AdditionalColumns",
 				"RequiredColumns keyGenerate(output(my_SK as long),",
 				"     startAt: 1L,",
 				"     stepValue: 1L) ~> surrogateKey1",
+				"union1 filter(SK_ID == 'Dallas_1') ~> filter2",
 				"AdditionalColumns sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     deletable:false,",
