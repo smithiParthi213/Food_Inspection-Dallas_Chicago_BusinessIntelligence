@@ -39,6 +39,8 @@
 			{
 				"name": "DIM_RESULTS",
 				"type": "ExecuteDataFlow",
+				"state": "Inactive",
+				"onInactiveMarkAs": "Succeeded",
 				"dependsOn": [
 					{
 						"activity": "DIM_INSPECTION_TYPE",
@@ -131,6 +133,8 @@
 			{
 				"name": "DIM_RISK",
 				"type": "ExecuteDataFlow",
+				"state": "Inactive",
+				"onInactiveMarkAs": "Succeeded",
 				"dependsOn": [
 					{
 						"activity": "DIM_FACILITY",
@@ -175,6 +179,8 @@
 			{
 				"name": "DIM_VIOLATION",
 				"type": "ExecuteDataFlow",
+				"state": "Inactive",
+				"onInactiveMarkAs": "Succeeded",
 				"dependsOn": [
 					{
 						"activity": "DIM_RISK",
