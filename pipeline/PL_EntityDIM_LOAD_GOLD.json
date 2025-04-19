@@ -5,6 +5,8 @@
 			{
 				"name": "DF_Chicago_Entity_LOAD",
 				"type": "ExecuteDataFlow",
+				"state": "Inactive",
+				"onInactiveMarkAs": "Succeeded",
 				"dependsOn": [],
 				"policy": {
 					"timeout": "0.12:00:00",
@@ -99,6 +101,16 @@
 								}
 							},
 							"MaxIDEntityDIM": {
+								"schema": {
+									"value": "GOLD",
+									"type": "Expression"
+								},
+								"tableName": {
+									"value": "DIM_ENTITY",
+									"type": "Expression"
+								}
+							},
+							"sourceEntityDim": {
 								"schema": {
 									"value": "GOLD",
 									"type": "Expression"
