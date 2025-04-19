@@ -65,13 +65,6 @@
 						"referenceName": "Snowflake",
 						"type": "DatasetReference"
 					},
-					"name": "sourceChicagoStg2"
-				},
-				{
-					"dataset": {
-						"referenceName": "Snowflake",
-						"type": "DatasetReference"
-					},
 					"name": "MaxIDFact"
 				}
 			],
@@ -81,60 +74,75 @@
 						"referenceName": "Snowflake",
 						"type": "DatasetReference"
 					},
-					"name": "sinkSNF"
+					"name": "sinkSNF1"
 				}
 			],
 			"transformations": [
 				{
-					"name": "select1"
+					"name": "RequiredDallasStg"
 				},
 				{
-					"name": "select2"
+					"name": "RequiredChicagoStg"
 				},
 				{
-					"name": "derivedColumn2"
+					"name": "AdditionalCol1"
 				},
 				{
-					"name": "union1"
+					"name": "unionSTG"
 				},
 				{
-					"name": "joinWithUnion"
+					"name": "AdditionalCol2"
 				},
 				{
-					"name": "RequiredCols"
+					"name": "DropDuplicates"
 				},
 				{
-					"name": "joinInspectionType"
+					"name": "RequiredCols1"
 				},
 				{
-					"name": "joinRisk"
+					"name": "joinInspectionTypeDIM"
 				},
 				{
-					"name": "joinResult"
+					"name": "selectInspectionSK"
 				},
 				{
-					"name": "joinFacility"
+					"name": "joinRiskDIM"
 				},
 				{
-					"name": "joinDate"
+					"name": "selectRiskSK"
 				},
 				{
-					"name": "RequiredColumns"
+					"name": "joinResultDIM"
 				},
 				{
-					"name": "joinEntity"
+					"name": "selectResultSK"
+				},
+				{
+					"name": "joinFacilityDIM"
+				},
+				{
+					"name": "selectFacilitySK"
+				},
+				{
+					"name": "joinDateDIM"
+				},
+				{
+					"name": "selectDateSK"
+				},
+				{
+					"name": "joinEntityDIM"
+				},
+				{
+					"name": "selectEntitySK"
+				},
+				{
+					"name": "surrogateKey"
 				},
 				{
 					"name": "joinSK"
 				},
 				{
-					"name": "AdditionalColumns"
-				},
-				{
-					"name": "surrogateKey1"
-				},
-				{
-					"name": "filter2"
+					"name": "FinalColumns"
 				}
 			],
 			"scriptLines": [
@@ -275,32 +283,6 @@
 				"     validateSchema: false,",
 				"     format: 'table') ~> dimDate",
 				"source(output(",
-				"          SK_ID as string,",
-				"          INSPECTION_ID as decimal(38,0),",
-				"          DBA_NAME as string,",
-				"          AKA_NAME as string,",
-				"          LICENSE_NUMBER as double,",
-				"          FACILITY_TYPE as string,",
-				"          RISK as string,",
-				"          ADDRESS as string,",
-				"          CITY as string,",
-				"          STATE as string,",
-				"          ZIP as decimal(38,0),",
-				"          INSPECTION_DATE as date,",
-				"          INSPECTION_TYPE as string,",
-				"          RESULTS as string,",
-				"          VIOLATION_NUMBER as decimal(38,0),",
-				"          VIOLATION_DESCRIPTION as string,",
-				"          VIOLATION_COMMENTS as string,",
-				"          LATITUDE as double,",
-				"          LONGITUDE as double,",
-				"          DI_JOB_ID as string,",
-				"          DI_LOAD_DT as date",
-				"     ),",
-				"     allowSchemaDrift: true,",
-				"     validateSchema: false,",
-				"     format: 'table') ~> sourceChicagoStg2",
-				"source(output(",
 				"          MAX_INSPECTION_SK as integer",
 				"     ),",
 				"     allowSchemaDrift: true,",
@@ -308,85 +290,162 @@
 				"     query: 'select NVL(MAX(INSPECTION_SK),0) as Max_INSPECTION_SK from FOOD_INSPECTION_DB.GOLD.FACT_FOOD_INSPECTION',",
 				"     format: 'query') ~> MaxIDFact",
 				"sourceDallasSTG select(mapColumn(",
-				"          SK_ID,",
 				"          INSPECTION_ID,",
 				"          DBA_NAME = RESTAURANT_NAME,",
 				"          INSPECTION_TYPE,",
 				"          INSPECTION_DATE,",
 				"          INSPECTION_SCORE,",
 				"          ADDRESS = STREET_ADDRESS,",
-				"          ZIP = ZIP_CODE,",
-				"          LATITUDE,",
-				"          LONGITUDE",
+				"          ZIP = ZIP_CODE",
 				"     ),",
 				"     skipDuplicateMapInputs: true,",
-				"     skipDuplicateMapOutputs: true) ~> select1",
+				"     skipDuplicateMapOutputs: true) ~> RequiredDallasStg",
 				"sourceChicagoSTG select(mapColumn(",
-				"          SK_ID,",
 				"          INSPECTION_ID,",
 				"          DBA_NAME,",
 				"          ADDRESS,",
 				"          ZIP,",
 				"          INSPECTION_DATE,",
 				"          INSPECTION_TYPE,",
-				"          LATITUDE,",
-				"          LONGITUDE",
-				"     ),",
-				"     skipDuplicateMapInputs: true,",
-				"     skipDuplicateMapOutputs: true) ~> select2",
-				"select2 derive(INSPECTION_SCORE = -1) ~> derivedColumn2",
-				"derivedColumn2, select1 union(byName: true)~> union1",
-				"sourceChicagoStg2, union1 join(sourceChicagoStg2@DBA_NAME == union1@DBA_NAME",
-				"     && sourceChicagoStg2@ADDRESS == union1@ADDRESS",
-				"     && sourceChicagoStg2@ZIP == union1@ZIP,",
-				"     joinType:'right',",
-				"     matchType:'exact',",
-				"     ignoreSpaces: false,",
-				"     broadcast: 'auto')~> joinWithUnion",
-				"joinWithUnion select(mapColumn(",
 				"          FACILITY_TYPE,",
 				"          RISK,",
-				"          ADDRESS = sourceChicagoStg2@ADDRESS,",
-				"          CITY,",
-				"          STATE,",
-				"          RESULTS,",
-				"          SK_ID = union1@SK_ID,",
-				"          INSPECTION_ID = union1@INSPECTION_ID,",
-				"          DBA_NAME = union1@DBA_NAME,",
-				"          ADDRESS = union1@ADDRESS,",
-				"          ZIP = union1@ZIP,",
-				"          INSPECTION_DATE = union1@INSPECTION_DATE,",
-				"          INSPECTION_TYPE = union1@INSPECTION_TYPE,",
-				"          INSPECTION_SCORE",
+				"          RESULTS",
 				"     ),",
 				"     skipDuplicateMapInputs: true,",
-				"     skipDuplicateMapOutputs: true) ~> RequiredCols",
-				"RequiredCols, dimInspectionType join(RequiredCols@INSPECTION_TYPE == dimInspectionType@INSPECTION_TYPE,",
+				"     skipDuplicateMapOutputs: true) ~> RequiredChicagoStg",
+				"RequiredChicagoStg derive(INSPECTION_SCORE = -1) ~> AdditionalCol1",
+				"AdditionalCol1, AdditionalCol2 union(byName: true)~> unionSTG",
+				"RequiredDallasStg derive(FACILITY_TYPE = 'Restaurant',",
+				"          RISK = 'Unknown',",
+				"          RESULTS = 'No Entry') ~> AdditionalCol2",
+				"unionSTG aggregate(groupBy(DBA_NAME,",
+				"          INSPECTION_ID,",
+				"          ADDRESS,",
+				"          ZIP,",
+				"          INSPECTION_DATE,",
+				"          INSPECTION_TYPE,",
+				"          FACILITY_TYPE,",
+				"          INSPECTION_SCORE,",
+				"          RISK,",
+				"          RESULTS),",
+				"     count_row = count(1)) ~> DropDuplicates",
+				"DropDuplicates select(mapColumn(",
+				"          INSPECTION_ID,",
+				"          DBA_NAME,",
+				"          ADDRESS,",
+				"          ZIP,",
+				"          INSPECTION_DATE,",
+				"          INSPECTION_TYPE,",
+				"          FACILITY_TYPE,",
+				"          INSPECTION_SCORE,",
+				"          RISK,",
+				"          RESULTS",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> RequiredCols1",
+				"RequiredCols1, dimInspectionType join(RequiredCols1@INSPECTION_TYPE == dimInspectionType@INSPECTION_TYPE,",
 				"     joinType:'left',",
 				"     matchType:'exact',",
 				"     ignoreSpaces: false,",
-				"     broadcast: 'auto')~> joinInspectionType",
-				"joinInspectionType, dimRisk join(RequiredCols@RISK == dimRisk@RISK,",
+				"     broadcast: 'auto')~> joinInspectionTypeDIM",
+				"joinInspectionTypeDIM select(mapColumn(",
+				"          INSPECTION_ID,",
+				"          DBA_NAME,",
+				"          ADDRESS,",
+				"          ZIP,",
+				"          INSPECTION_DATE,",
+				"          FACILITY_TYPE,",
+				"          INSPECTION_SCORE,",
+				"          RISK,",
+				"          RESULTS,",
+				"          INSPECTION_TYPE_SK",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> selectInspectionSK",
+				"selectInspectionSK, dimRisk join(selectInspectionSK@RISK == dimRisk@RISK,",
 				"     joinType:'left',",
 				"     matchType:'exact',",
 				"     ignoreSpaces: false,",
-				"     broadcast: 'auto')~> joinRisk",
-				"joinRisk, dimResult join(RequiredCols@RESULTS == dimResult@RESULTS,",
+				"     broadcast: 'auto')~> joinRiskDIM",
+				"joinRiskDIM select(mapColumn(",
+				"          INSPECTION_ID,",
+				"          DBA_NAME,",
+				"          ADDRESS,",
+				"          ZIP,",
+				"          INSPECTION_DATE,",
+				"          FACILITY_TYPE,",
+				"          INSPECTION_SCORE,",
+				"          RESULTS,",
+				"          INSPECTION_TYPE_SK,",
+				"          RISK_SK",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> selectRiskSK",
+				"selectRiskSK, dimResult join(selectRiskSK@RESULTS == dimResult@RESULTS,",
 				"     joinType:'left',",
 				"     matchType:'exact',",
 				"     ignoreSpaces: false,",
-				"     broadcast: 'auto')~> joinResult",
-				"joinResult, dimFacility join(RequiredCols@FACILITY_TYPE == dimFacility@FACILITY_TYPE,",
+				"     broadcast: 'auto')~> joinResultDIM",
+				"joinResultDIM select(mapColumn(",
+				"          INSPECTION_ID,",
+				"          DBA_NAME,",
+				"          ADDRESS,",
+				"          ZIP,",
+				"          INSPECTION_DATE,",
+				"          FACILITY_TYPE,",
+				"          INSPECTION_SCORE,",
+				"          INSPECTION_TYPE_SK,",
+				"          RISK_SK,",
+				"          RESULT_SK",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> selectResultSK",
+				"selectResultSK, dimFacility join(selectResultSK@FACILITY_TYPE == dimFacility@FACILITY_TYPE,",
 				"     joinType:'left',",
 				"     matchType:'exact',",
 				"     ignoreSpaces: false,",
-				"     broadcast: 'auto')~> joinFacility",
-				"joinFacility, dimDate join(RequiredCols@INSPECTION_DATE == dimDate@INSPECTION_DATE,",
+				"     broadcast: 'auto')~> joinFacilityDIM",
+				"joinFacilityDIM select(mapColumn(",
+				"          INSPECTION_ID,",
+				"          DBA_NAME,",
+				"          ADDRESS,",
+				"          ZIP,",
+				"          INSPECTION_DATE,",
+				"          INSPECTION_SCORE,",
+				"          INSPECTION_TYPE_SK,",
+				"          RISK_SK,",
+				"          RESULT_SK,",
+				"          FACILITY_SK",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> selectFacilitySK",
+				"selectFacilitySK, dimDate join(selectFacilitySK@INSPECTION_DATE == dimDate@INSPECTION_DATE,",
 				"     joinType:'left',",
 				"     matchType:'exact',",
 				"     ignoreSpaces: false,",
-				"     broadcast: 'auto')~> joinDate",
-				"joinEntity select(mapColumn(",
+				"     broadcast: 'auto')~> joinDateDIM",
+				"joinDateDIM select(mapColumn(",
+				"          INSPECTION_ID,",
+				"          DBA_NAME,",
+				"          ADDRESS,",
+				"          ZIP,",
+				"          INSPECTION_SCORE,",
+				"          INSPECTION_TYPE_SK,",
+				"          RISK_SK,",
+				"          RESULT_SK,",
+				"          FACILITY_SK,",
+				"          DATE_SK",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> selectDateSK",
+				"selectDateSK, dimEntity join(selectDateSK@DBA_NAME == dimEntity@DBA_NAME",
+				"     && ADDRESS == STREET_ADDRESS",
+				"     && ZIP == ZIP_CODE,",
+				"     joinType:'left',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> joinEntityDIM",
+				"joinEntityDIM select(mapColumn(",
 				"          INSPECTION_ID,",
 				"          INSPECTION_SCORE,",
 				"          INSPECTION_TYPE_SK,",
@@ -397,54 +456,42 @@
 				"          ENTITY_SK",
 				"     ),",
 				"     skipDuplicateMapInputs: true,",
-				"     skipDuplicateMapOutputs: true) ~> RequiredColumns",
-				"joinDate, dimEntity join(RequiredCols@DBA_NAME == dimEntity@DBA_NAME",
-				"     && ADDRESS == STREET_ADDRESS",
-				"     && ZIP == ZIP_CODE,",
-				"     joinType:'left',",
-				"     matchType:'exact',",
-				"     ignoreSpaces: false,",
-				"     broadcast: 'auto')~> joinEntity",
-				"surrogateKey1, MaxIDFact join(1==1,",
+				"     skipDuplicateMapOutputs: true) ~> selectEntitySK",
+				"selectEntitySK keyGenerate(output(my_SK as long),",
+				"     startAt: 1L,",
+				"     stepValue: 1L) ~> surrogateKey",
+				"surrogateKey, MaxIDFact join(1==1,",
 				"     joinType:'cross',",
 				"     matchType:'exact',",
 				"     ignoreSpaces: false,",
 				"     broadcast: 'auto')~> joinSK",
-				"joinSK derive(INSPECTION_SK = my_SK + MAX_INSPECTION_SK ,",
+				"joinSK derive(INSPECTION_SK = my_SK + MAX_INSPECTION_SK,",
 				"          DI_JOB_ID = $DI_JOB_ID,",
-				"          DI_LOAD_DT = currentDate(),",
-				"          RISK_SK = iif(isNull(RISK_SK), -1, toInteger(RISK_SK)),",
-				"          RESULT_SK = iif(isNull(RESULT_SK), -1, toInteger(RESULT_SK)),",
-				"          FACILITY_SK = iif(isNull(FACILITY_SK), -1, toInteger(FACILITY_SK)),",
-				"          INSPECTION_TYPE_SK = iif(isNull(INSPECTION_TYPE_SK), -1, toInteger(INSPECTION_TYPE_SK)),",
-				"          ENTITY_SK = iif(isNull(ENTITY_SK), -1, toInteger(ENTITY_SK))) ~> AdditionalColumns",
-				"RequiredColumns keyGenerate(output(my_SK as long),",
-				"     startAt: 1L,",
-				"     stepValue: 1L) ~> surrogateKey1",
-				"union1 filter(SK_ID == 'Dallas_1') ~> filter2",
-				"AdditionalColumns sink(allowSchemaDrift: true,",
+				"          DI_LOAD_DT = currentDate()) ~> FinalColumns",
+				"FinalColumns sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     deletable:false,",
 				"     insertable:true,",
 				"     updateable:false,",
 				"     upsertable:false,",
+				"     truncate:true,",
 				"     format: 'table',",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
 				"     stageInsert: true,",
 				"     mapColumn(",
 				"          INSPECTION_SK,",
-				"          DATE_SK,",
 				"          INSPECTION_TYPE_SK,",
-				"          FACILITY_SK,",
+				"          RISK_SK,",
 				"          RESULT_SK,",
+				"          FACILITY_SK,",
+				"          DATE_SK,",
+				"          ENTITY_SK,",
 				"          INSPECTION_ID,",
 				"          INSPECTION_SCORE,",
-				"          RISK_SK,",
-				"          ENTITY_SK,",
 				"          DI_JOB_ID,",
 				"          DI_LOAD_DT",
-				"     )) ~> sinkSNF"
+				"     )) ~> sinkSNF1"
 			]
 		}
 	}
