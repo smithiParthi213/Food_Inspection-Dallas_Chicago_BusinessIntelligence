@@ -3,7 +3,7 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "DIM_INSPECTION",
+				"name": "DIM_INSPECTION_TYPE",
 				"type": "ExecuteDataFlow",
 				"state": "Inactive",
 				"onInactiveMarkAs": "Succeeded",
@@ -27,10 +27,6 @@
 							"sourceSILVER": {
 								"schema": "SILVER",
 								"tableName": "CHICAGO_FOOD_INSPECTIONS_STG2"
-							},
-							"sink1": {
-								"schema": "GOLD",
-								"tableName": "DIM_INSPECTIONTYPE"
 							}
 						}
 					},
@@ -48,7 +44,7 @@
 				"onInactiveMarkAs": "Succeeded",
 				"dependsOn": [
 					{
-						"activity": "DIM_INSPECTION",
+						"activity": "DIM_INSPECTION_TYPE",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -209,6 +205,10 @@
 							"sourceChicagoSTG": {
 								"schema": "SILVER",
 								"tableName": "CHICAGO_FOOD_INSPECTIONS_STG2"
+							},
+							"MaxIDViolationGold": {
+								"schema": "GOLD",
+								"tableName": "DIM_VIOLATION"
 							},
 							"sinkVIOLATION": {
 								"schema": "GOLD",
