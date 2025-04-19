@@ -48,7 +48,7 @@
 				}
 			},
 			{
-				"name": "Dallas_STG2_TRANS_copy1",
+				"name": "Dallas_STG2_TRANS",
 				"type": "ExecuteDataFlow",
 				"dependsOn": [
 					{

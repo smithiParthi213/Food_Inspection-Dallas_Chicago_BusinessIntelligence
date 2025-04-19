@@ -18,9 +18,6 @@
 					"dataflow": {
 						"referenceName": "DIM_INSPECTION_DF",
 						"type": "DataFlowReference",
-						"parameters": {
-							"JOB_ID": "\"AN11\""
-						},
 						"datasetParameters": {
 							"sourceSILVER": {
 								"schema": "SILVER",
@@ -115,6 +112,14 @@
 							"srcChicagoStg": {
 								"schema": "SILVER",
 								"tableName": "CHICAGO_FOOD_INSPECTIONS_STG2"
+							},
+							"MAXID": {
+								"schema": "GOLD",
+								"tableName": "DIM_FACILITY"
+							},
+							"sinkDimFacility": {
+								"schema": "GOLD",
+								"tableName": "DIM_FACILITY"
 							}
 						}
 					},
