@@ -9,7 +9,14 @@
 						"referenceName": "Snowflake",
 						"type": "DatasetReference"
 					},
-					"name": "sourceSILVER"
+					"name": "sourceSILVERChicago"
+				},
+				{
+					"dataset": {
+						"referenceName": "Snowflake",
+						"type": "DatasetReference"
+					},
+					"name": "sourceDalllas"
 				}
 			],
 			"sinks": [
@@ -33,13 +40,20 @@
 				},
 				{
 					"name": "aggregate"
+				},
+				{
+					"name": "union1"
+				},
+				{
+					"name": "derivedColumn2"
 				}
 			],
 			"scriptLines": [
 				"parameters{",
-				"     JOB_ID as string (\"SP_001\")",
+				"     JOB_ID as string (\"AN11\")",
 				"}",
 				"source(output(",
+				"          SK_ID as string,",
 				"          INSPECTION_ID as decimal(38,0),",
 				"          DBA_NAME as string,",
 				"          AKA_NAME as string,",
@@ -50,23 +64,50 @@
 				"          CITY as string,",
 				"          STATE as string,",
 				"          ZIP as decimal(38,0),",
-				"          INSPECTION_DATE as timestamp,",
+				"          INSPECTION_DATE as date,",
 				"          INSPECTION_TYPE as string,",
 				"          RESULTS as string,",
-				"          VIOLATION_NUMBER as string,",
+				"          VIOLATION_NUMBER as decimal(38,0),",
 				"          VIOLATION_DESCRIPTION as string,",
 				"          VIOLATION_COMMENTS as string,",
 				"          LATITUDE as double,",
 				"          LONGITUDE as double,",
-				"          LOCATION as string,",
 				"          DI_JOB_ID as string,",
 				"          DI_LOAD_DT as date",
 				"     ),",
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
-				"     format: 'table') ~> sourceSILVER",
+				"     format: 'table') ~> sourceSILVERChicago",
+				"source(output(",
+				"          SK_ID as string,",
+				"          INSPECTION_ID as decimal(38,0),",
+				"          RESTAURANT_NAME as string,",
+				"          INSPECTION_TYPE as string,",
+				"          INSPECTION_DATE as date,",
+				"          INSPECTION_SCORE as decimal(38,0),",
+				"          STREET_NUMBER as decimal(38,0),",
+				"          STREET_NAME as string,",
+				"          STREET_DIRECTION as string,",
+				"          STREET_TYPE as string,",
+				"          STREET_UNIT as string,",
+				"          STREET_ADDRESS as string,",
+				"          ZIP_CODE as decimal(38,0),",
+				"          VIOLATION_NUMBER as decimal(38,0),",
+				"          VIOLATION_DESCRIPTION as string,",
+				"          VIOLATION_POINTS as decimal(38,0),",
+				"          VIOLATION_DETAILS as string,",
+				"          VIOLATION_MEMO as string,",
+				"          INSPECTION_MONTH as string,",
+				"          INSPECTION_YEAR as string,",
+				"          LATITUDE as double,",
+				"          LONGITUDE as double,",
+				"          DI_JOB_ID as string,",
+				"          DI_LOAD_DT as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> sourceDalllas",
 				"surrogateKey derive(INSPECTION_TYPE_SK = my_sk,",
-				"          INSPECTION_TYPE = upper(INSPECTION_TYPE),",
 				"          DI_JOB_ID = $JOB_ID,",
 				"          DI_LOAD_DT = currentTimestamp()) ~> derivedCols",
 				"aggregate keyGenerate(output(my_sk as long),",
@@ -80,8 +121,10 @@
 				"     ),",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true) ~> selectReqCols",
-				"sourceSILVER aggregate(groupBy(INSPECTION_TYPE),",
-				"     COUNT_ROW = count(INSPECTION_ID)) ~> aggregate",
+				"union1 aggregate(groupBy(INSPECTION_TYPE),",
+				"     COUNT_ROW = count()) ~> aggregate",
+				"derivedColumn2, sourceDalllas union(byName: true)~> union1",
+				"sourceSILVERChicago derive(VIOLATION_NUMBER = toDecimal(VIOLATION_NUMBER)) ~> derivedColumn2",
 				"selectReqCols sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     deletable:false,",
