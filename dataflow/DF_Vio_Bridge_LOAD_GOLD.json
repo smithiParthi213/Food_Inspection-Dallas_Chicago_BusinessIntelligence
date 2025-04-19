@@ -83,6 +83,9 @@
 				}
 			],
 			"scriptLines": [
+				"parameters{",
+				"     job_id as string (\"SP_001\")",
+				"}",
 				"source(output(",
 				"          SK_ID as string,",
 				"          INSPECTION_ID as decimal(38,0),",
@@ -234,9 +237,9 @@
 				"     ),",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true) ~> select1",
-				"join3 derive(INSPECTION_VIOLATION_SK = my_sk + Max_InspVio_SK ,",
-				"          di_job_id = ERROR_FUNCTION(''),",
-				"          di_load_dt = ERROR_FUNCTION('')) ~> derivedColumn1",
+				"join3 derive(di_job_id = $job_id,",
+				"          di_load_dt = currentDate(),",
+				"          INSPECTION_VIOLATION_SK = my_sk + MAX_IV_SK) ~> derivedColumn1",
 				"surrogateKey1, MaxIDBridgeVio join(1==1,",
 				"     joinType:'cross',",
 				"     matchType:'exact',",
