@@ -123,7 +123,7 @@
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true) ~> selectReqCols",
 				"union1 aggregate(groupBy(INSPECTION_TYPE),",
-				"     COUNT_ROW = count(INSPECTION_ID)) ~> aggregate",
+				"     COUNT_ROW = count()) ~> aggregate",
 				"derivedColumn2, sourceDalllas union(byName: true)~> union1",
 				"sourceSILVERChicago derive(VIOLATION_NUMBER = toDecimal(VIOLATION_NUMBER)) ~> derivedColumn2",
 				"selectReqCols sink(allowSchemaDrift: true,",
