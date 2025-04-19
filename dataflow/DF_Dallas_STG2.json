@@ -10,13 +10,6 @@
 						"type": "DatasetReference"
 					},
 					"name": "sourceDallasSTG1"
-				},
-				{
-					"dataset": {
-						"referenceName": "Snowflake",
-						"type": "DatasetReference"
-					},
-					"name": "DallasSTG2MaxID"
 				}
 			],
 			"sinks": [
@@ -52,13 +45,13 @@
 					"name": "surrogateKey"
 				},
 				{
-					"name": "joinMaxID"
-				},
-				{
 					"name": "derivedColumn3"
 				},
 				{
 					"name": "select1"
+				},
+				{
+					"name": "filter1"
 				}
 			],
 			"scriptLines": [
@@ -187,13 +180,6 @@
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     format: 'table') ~> sourceDallasSTG1",
-				"source(output(",
-				"          MAX_SK_ID as decimal(38,0)",
-				"     ),",
-				"     allowSchemaDrift: true,",
-				"     validateSchema: false,",
-				"     query: 'select NVL(MAX(SK_ID),0) as Max_SK_ID from FOOD_INSPECTION_DB.SILVER.DALLAS_FOOD_INSPECTIONS_STG2',",
-				"     format: 'query') ~> DallasSTG2MaxID",
 				"sourceDallasSTG1 derive(violation_array = array(\r",
 				"  array(toString(1), toString(VIOLATION_DESCRIPTION_1), toString(VIOLATION_DETAILS_1), toString(VIOLATION_MEMO_1), toString(VIOLATION_POINTS_1)),\r",
 				"  array(toString(2), toString(VIOLATION_DESCRIPTION_2), toString(VIOLATION_DETAILS_2), toString(VIOLATION_MEMO_2), toString(VIOLATION_POINTS_2)),\r",
@@ -237,16 +223,11 @@
 				"filterNACols keyGenerate(output(my_sk as long),",
 				"     startAt: 1L,",
 				"     stepValue: 1L) ~> surrogateKey",
-				"surrogateKey, DallasSTG2MaxID join(1==1,",
-				"     joinType:'cross',",
-				"     matchType:'exact',",
-				"     ignoreSpaces: false,",
-				"     broadcast: 'auto')~> joinMaxID",
-				"joinMaxID derive(SK_ID = concat('Dallas_', toString(my_sk+MAX_SK_ID)),",
-				"          INSPECTION_ID = crc32(concat(  toString(RESTAURANT_NAME),  toString(INSPECTION_DATE),  toString(ZIP_CODE))),",
+				"surrogateKey derive(SK_ID = my_sk,",
+				"          INSPECTION_ID = abs(crc32(concat(  toString(RESTAURANT_NAME),  toString(INSPECTION_DATE),  toString(ZIP_CODE)))),",
 				"          job_id = $job_id,",
 				"          load_dt = currentDate()) ~> derivedColumn3",
-				"derivedColumn3 select(mapColumn(",
+				"filter1 select(mapColumn(",
 				"          SK_ID,",
 				"          INSPECTION_ID,",
 				"          RESTAURANT_NAME,",
@@ -274,12 +255,14 @@
 				"     ),",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true) ~> select1",
+				"derivedColumn3 filter(INSPECTION_ID < 0 ) ~> filter1",
 				"select1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     deletable:false,",
 				"     insertable:true,",
 				"     updateable:false,",
 				"     upsertable:false,",
+				"     truncate:true,",
 				"     format: 'table',",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
