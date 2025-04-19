@@ -57,6 +57,10 @@
 							"MaxIDFact": {
 								"schema": "GOLD",
 								"tableName": "FACT_FOOD_INSPECTION"
+							},
+							"sinkSNF1": {
+								"schema": "GOLD",
+								"tableName": "FACT_FOOD_INSPECTION"
 							}
 						}
 					},
