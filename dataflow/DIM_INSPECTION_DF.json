@@ -37,7 +37,7 @@
 			],
 			"scriptLines": [
 				"parameters{",
-				"     JOB_ID as string (\"AN11\")",
+				"     JOB_ID as string (\"SP_001\")",
 				"}",
 				"source(output(",
 				"          INSPECTION_ID as decimal(38,0),",
