@@ -10,6 +10,13 @@
 						"type": "DatasetReference"
 					},
 					"name": "srcChicagoStg"
+				},
+				{
+					"dataset": {
+						"referenceName": "Snowflake",
+						"type": "DatasetReference"
+					},
+					"name": "MAXID"
 				}
 			],
 			"sinks": [
@@ -18,7 +25,7 @@
 						"referenceName": "Snowflake",
 						"type": "DatasetReference"
 					},
-					"name": "sink1"
+					"name": "sinkDimFacility"
 				}
 			],
 			"transformations": [
@@ -36,6 +43,9 @@
 				},
 				{
 					"name": "RequiredColumns2"
+				},
+				{
+					"name": "join1"
 				}
 			],
 			"scriptLines": [
@@ -68,17 +78,25 @@
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     format: 'table') ~> srcChicagoStg",
+				"source(output(",
+				"          MAXFACILITYSK as decimal(30,0)",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     query: 'select COALESCE(MAX(FACILITY_SK),0) as MaxFacilitysk from FOOD_INSPECTION_DB.GOLD.DIM_FACILITY',",
+				"     format: 'query') ~> MAXID",
 				"srcChicagoStg select(mapColumn(",
 				"          INSPECTION_ID,",
 				"          FACILITY_TYPE",
 				"     ),",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true) ~> RequiredColumns",
-				"surrogateKey1 derive(DI_JOB_ID = $DI_JOB_ID,",
+				"surrogateKey1 derive(FACILITY_SK = MAXFACILITYSK + FACILITY_SK,",
+				"          DI_JOB_ID = $DI_JOB_ID,",
 				"          DI_LOAD_DT = currentDate()) ~> AdditionalColumns",
 				"RequiredColumns aggregate(groupBy(FACILITY_TYPE),",
 				"     COUNT_ROW = count(INSPECTION_ID)) ~> aggregate1",
-				"aggregate1 keyGenerate(output(FACILITY_SK as long),",
+				"join1 keyGenerate(output(FACILITY_SK as long),",
 				"     startAt: 1L,",
 				"     stepValue: 1L) ~> surrogateKey1",
 				"AdditionalColumns select(mapColumn(",
@@ -89,6 +107,11 @@
 				"     ),",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true) ~> RequiredColumns2",
+				"aggregate1, MAXID join(1==1,",
+				"     joinType:'cross',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join1",
 				"RequiredColumns2 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     deletable:false,",
@@ -105,7 +128,7 @@
 				"          FACILITY_TYPE = FACILTY_TYPE,",
 				"          DI_JOB_ID,",
 				"          DI_LOAD_DT",
-				"     )) ~> sink1"
+				"     )) ~> sinkDimFacility"
 			]
 		}
 	}

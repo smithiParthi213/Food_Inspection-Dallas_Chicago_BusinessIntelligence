@@ -10,6 +10,13 @@
 						"type": "DatasetReference"
 					},
 					"name": "sourceSILVER"
+				},
+				{
+					"dataset": {
+						"referenceName": "Snowflake",
+						"type": "DatasetReference"
+					},
+					"name": "MAXID"
 				}
 			],
 			"sinks": [
@@ -33,6 +40,9 @@
 				},
 				{
 					"name": "aggregate1"
+				},
+				{
+					"name": "join1"
 				}
 			],
 			"scriptLines": [
@@ -65,9 +75,16 @@
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     format: 'table') ~> sourceSILVER",
+				"source(output(",
+				"          MAXSK as decimal(30,0)",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     query: 'SELECT COALESCE(MAX(INSPECTION_TYPE_SK), 0) as MAXSK \\nFROM FOOD_INSPECTION_DB.GOLD.DIM_INSPECTIONTYPE\\n',",
+				"     format: 'query') ~> MAXID",
 				"surrogateKey derive(DI_JOB_ID = $JOB_ID,",
 				"          DI_LOAD_DT = currentTimestamp()) ~> derivedColumn1",
-				"aggregate1 keyGenerate(output(INSPECTION_TYPE_SK as long),",
+				"join1 keyGenerate(output(INSPECTION_TYPE_SK as long),",
 				"     startAt: 1L,",
 				"     stepValue: 1L) ~> surrogateKey",
 				"derivedColumn1 select(mapColumn(",
@@ -80,6 +97,11 @@
 				"     skipDuplicateMapOutputs: true) ~> select1",
 				"sourceSILVER aggregate(groupBy(INSPECTION_TYPE),",
 				"     COUNT_ROW = count(INSPECTION_ID)) ~> aggregate1",
+				"aggregate1, MAXID join(1==1,",
+				"     joinType:'cross',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join1",
 				"select1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     deletable:false,",
