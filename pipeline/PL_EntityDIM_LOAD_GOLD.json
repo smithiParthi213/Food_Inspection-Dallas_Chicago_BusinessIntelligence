@@ -68,8 +68,6 @@
 			{
 				"name": "DF_Dallas_Entity_LOAD",
 				"type": "ExecuteDataFlow",
-				"state": "Inactive",
-				"onInactiveMarkAs": "Succeeded",
 				"dependsOn": [
 					{
 						"activity": "DF_Chicago_Entity_LOAD",
