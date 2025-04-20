@@ -24,10 +24,6 @@
 							"JOB_ID": "\"SP_001\""
 						},
 						"datasetParameters": {
-							"sourceSILVER": {
-								"schema": "SILVER",
-								"tableName": "CHICAGO_FOOD_INSPECTIONS_STG2"
-							},
 							"sinkSnfGold": {
 								"schema": "GOLD",
 								"tableName": "DIM_INSPECTIONTYPE"
@@ -233,6 +229,175 @@
 						"computeType": "General"
 					},
 					"traceLevel": "Fine"
+				}
+			},
+			{
+				"name": "DF_Chicago_Entity_LOAD",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [
+					{
+						"activity": "DIM_VIOLATION",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "DF_Chicago_Entity_Load_GOLD",
+						"type": "DataFlowReference",
+						"parameters": {
+							"JOB_ID": "\"AN11\""
+						},
+						"datasetParameters": {
+							"sourceChicago": {
+								"schema": {
+									"value": "SILVER",
+									"type": "Expression"
+								},
+								"tableName": {
+									"value": "CHICAGO_FOOD_INSPECTIONS_STG2",
+									"type": "Expression"
+								}
+							},
+							"MaxIDEntityDim": {
+								"schema": {
+									"value": "GOLD",
+									"type": "Expression"
+								},
+								"tableName": {
+									"value": "DIM_ENTITY",
+									"type": "Expression"
+								}
+							},
+							"sourceEntityDim": {
+								"schema": "GOLD",
+								"tableName": "DIM_ENTITY"
+							},
+							"sinkSnfGold": {
+								"schema": {
+									"value": "GOLD",
+									"type": "Expression"
+								},
+								"tableName": {
+									"value": "DIM_ENTITY",
+									"type": "Expression"
+								}
+							}
+						}
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			},
+			{
+				"name": "DF_Dallas_Entity_LOAD",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [
+					{
+						"activity": "DF_Chicago_Entity_LOAD",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "DF_Dallas_Entity_Load_GOLD",
+						"type": "DataFlowReference",
+						"parameters": {
+							"job_id": "\"SP_001\""
+						},
+						"datasetParameters": {
+							"sourceDallasSTG2": {
+								"schema": {
+									"value": "SILVER",
+									"type": "Expression"
+								},
+								"tableName": {
+									"value": "DALLAS_FOOD_INSPECTIONS_STG2",
+									"type": "Expression"
+								}
+							},
+							"MaxIDEntityDIM": {
+								"schema": {
+									"value": "GOLD",
+									"type": "Expression"
+								},
+								"tableName": {
+									"value": "DIM_ENTITY",
+									"type": "Expression"
+								}
+							},
+							"sourceEntityDim": {
+								"schema": {
+									"value": "GOLD",
+									"type": "Expression"
+								},
+								"tableName": {
+									"value": "DIM_ENTITY",
+									"type": "Expression"
+								}
+							},
+							"sinkSnfGold": {
+								"schema": {
+									"value": "GOLD",
+									"type": "Expression"
+								},
+								"tableName": {
+									"value": "DIM_ENTITY",
+									"type": "Expression"
+								}
+							}
+						}
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			},
+			{
+				"name": "Execute_FACT_load",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "DF_Dallas_Entity_LOAD",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "PL_FACT_LOAD_GOLD",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": false
 				}
 			}
 		],
