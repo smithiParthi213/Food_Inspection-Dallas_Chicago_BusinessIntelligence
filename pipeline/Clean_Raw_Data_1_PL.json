@@ -59,6 +59,29 @@
 					"referenceName": "AzureDatabricks_LS",
 					"type": "LinkedServiceReference"
 				}
+			},
+			{
+				"name": "Execute_PL_STG2_Trans",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Clean_RAW_DBX",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "PL_STG2_Transformation",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": false
+				}
 			}
 		],
 		"parameters": {

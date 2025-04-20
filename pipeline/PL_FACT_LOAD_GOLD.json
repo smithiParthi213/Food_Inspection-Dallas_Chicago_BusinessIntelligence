@@ -70,6 +70,29 @@
 					},
 					"traceLevel": "Fine"
 				}
+			},
+			{
+				"name": "Execute_L_BridgeViolation",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "FACT_LOAD",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "PL_Violation_BRIDGE_LOAD_GOLD",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": false
+				}
 			}
 		],
 		"annotations": []
