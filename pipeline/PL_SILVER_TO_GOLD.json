@@ -5,8 +5,6 @@
 			{
 				"name": "DIM_INSPECTION_TYPE",
 				"type": "ExecuteDataFlow",
-				"state": "Inactive",
-				"onInactiveMarkAs": "Succeeded",
 				"dependsOn": [],
 				"policy": {
 					"timeout": "0.12:00:00",
@@ -24,10 +22,6 @@
 							"JOB_ID": "\"SP_001\""
 						},
 						"datasetParameters": {
-							"sourceSILVER": {
-								"schema": "SILVER",
-								"tableName": "CHICAGO_FOOD_INSPECTIONS_STG2"
-							},
 							"sinkSnfGold": {
 								"schema": "GOLD",
 								"tableName": "DIM_INSPECTIONTYPE"
@@ -44,8 +38,6 @@
 			{
 				"name": "DIM_RESULTS",
 				"type": "ExecuteDataFlow",
-				"state": "Inactive",
-				"onInactiveMarkAs": "Succeeded",
 				"dependsOn": [
 					{
 						"activity": "DIM_INSPECTION_TYPE",
@@ -90,8 +82,6 @@
 			{
 				"name": "DIM_FACILITY",
 				"type": "ExecuteDataFlow",
-				"state": "Inactive",
-				"onInactiveMarkAs": "Succeeded",
 				"dependsOn": [
 					{
 						"activity": "DIM_RESULTS",
@@ -102,7 +92,7 @@
 				],
 				"policy": {
 					"timeout": "0.12:00:00",
-					"retry": 0,
+					"retry": 2,
 					"retryIntervalInSeconds": 30,
 					"secureOutput": false,
 					"secureInput": false
@@ -140,8 +130,6 @@
 			{
 				"name": "DIM_RISK",
 				"type": "ExecuteDataFlow",
-				"state": "Inactive",
-				"onInactiveMarkAs": "Succeeded",
 				"dependsOn": [
 					{
 						"activity": "DIM_FACILITY",
@@ -196,7 +184,7 @@
 				],
 				"policy": {
 					"timeout": "0.12:00:00",
-					"retry": 0,
+					"retry": 2,
 					"retryIntervalInSeconds": 30,
 					"secureOutput": false,
 					"secureInput": false
