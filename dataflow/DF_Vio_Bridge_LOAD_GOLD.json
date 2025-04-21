@@ -46,7 +46,11 @@
 						"referenceName": "Snowflake",
 						"type": "DatasetReference"
 					},
-					"name": "sinkSnfBridge"
+					"name": "sinkSnfBridge",
+					"rejectedDataLinkedService": {
+						"referenceName": "AzureDataLakeStorage_LS",
+						"type": "LinkedServiceReference"
+					}
 				}
 			],
 			"transformations": [
@@ -280,6 +284,9 @@
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
 				"     stageInsert: true,",
+				"     outputAssertFailedRows: true,",
+				"     assertFailure_fileSystem: 'errorlogs',",
+				"     assertFailure_folderPath: 'bridgeViolation',",
 				"     mapColumn(",
 				"          INSPECTION_VIOLATION_SK,",
 				"          VIOLATION_SK,",
